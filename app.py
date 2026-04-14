@@ -1,8 +1,10 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, redirect, make_response
 from flask_cors import CORS
 import threading
+import os
 import rmp
 import reddit_scraper
+import payment
 
 app = Flask(__name__)
 CORS(app)
@@ -20,12 +22,48 @@ def _warmup():
 threading.Thread(target=_warmup, daemon=True).start()
 
 
+# ── Payment routes (unprotected) ─────────────────────────────────────────────
+
+@app.route("/pay")
+def pay_page():
+    error = request.args.get("error")
+    return render_template("pay.html", error=error)
+
+
+@app.route("/create-checkout")
+def create_checkout():
+    base_url = request.host_url.rstrip("/")
+    try:
+        session = payment.create_checkout_session(base_url)
+        return redirect(session.url)
+    except Exception as e:
+        return redirect(f"/pay?error={str(e)}")
+
+
+@app.route("/payment-success")
+def payment_success():
+    session_id = request.args.get("session_id", "")
+    try:
+        if not session_id or not payment.verify_session(session_id):
+            return redirect("/pay?error=Payment+could+not+be+verified")
+    except Exception:
+        return redirect("/pay?error=Payment+verification+failed")
+
+    resp = make_response(redirect("/"))
+    payment.issue_access_cookie(resp, session_id)
+    return resp
+
+
+# ── Protected routes ──────────────────────────────────────────────────────────
+
 @app.route("/")
+@payment.require_payment
 def index():
     return render_template("index.html")
 
 
 @app.route("/api/course")
+@payment.require_payment
 def course_search():
     course = request.args.get("course", "").strip()
     if not course or len(course) < 2:
@@ -40,12 +78,13 @@ def course_search():
 
 
 @app.route("/api/index-status")
+@payment.require_payment
 def index_status():
-    """Let the frontend know if the professor index is cached or needs building."""
     return jsonify({"cached": rmp.is_cache_fresh()})
 
 
 @app.route("/api/search")
+@payment.require_payment
 def search():
     name = request.args.get("name", "").strip()
     if not name or len(name) < 2:
@@ -59,6 +98,7 @@ def search():
 
 
 @app.route("/api/professor/<professor_id>")
+@payment.require_payment
 def professor_detail(professor_id):
     try:
         data = rmp.get_professor_ratings(professor_id)
