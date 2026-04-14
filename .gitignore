@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+.env
+.su_prof_cache.json
+*.log
