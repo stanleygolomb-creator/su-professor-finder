@@ -58,7 +58,7 @@ def create_checkout_session(base_url: str):
         line_items=[{
             "price_data": {
                 "currency": "usd",
-                "unit_amount": 200,  # $2.00
+                "unit_amount": 199,  # $1.99
                 "product_data": {
                     "name": "SU Professor Finder — Lifetime Access",
                     "description": "One-time $2 payment for unlimited access to Syracuse University professor and course reviews.",
