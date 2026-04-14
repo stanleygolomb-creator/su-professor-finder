@@ -4,560 +4,454 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SU Professor Finder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body { font-family: 'Segoe UI', system-ui, sans-serif; }
-    .rating-ring { stroke-dasharray: 100; stroke-linecap: round; transition: stroke-dashoffset 0.8s ease; }
-    .card-hover { transition: transform 0.15s ease, box-shadow 0.15s ease; }
-    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,0,0,0.12); }
-    .tag { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+    * { font-family: 'Inter', system-ui, sans-serif; }
+    body { background: #f5f4f0; }
+
+    .card { background: #fff; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,0.07), 0 8px 24px rgba(0,0,0,0.04); }
+    .card-hover { transition: transform 0.15s ease, box-shadow 0.15s ease; cursor: pointer; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 4px 6px rgba(0,0,0,0.07), 0 16px 40px rgba(0,0,0,0.09); }
+
+    .tag { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.01em; }
+
     .spinner { animation: spin 0.8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
-    .fade-in { animation: fadeIn 0.3s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-    .star { color: #f59e0b; }
-    .difficulty-low { color: #16a34a; }
-    .difficulty-med { color: #d97706; }
-    .difficulty-high { color: #dc2626; }
-    ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+    .fade-in { animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    .diff-low  { color: #16a34a; }
+    .diff-med  { color: #d97706; }
+    .diff-high { color: #dc2626; }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+
+    .rating-avatar {
+      width: 56px; height: 56px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 1.1rem; color: white; flex-shrink: 0;
+    }
+
+    .pill-tab { flex: 1; padding: 8px; font-size: 0.8rem; font-weight: 600; border-radius: 10px; transition: all 0.15s ease; }
+    .pill-tab.active { background: white; color: #D44500; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+    .pill-tab.inactive { color: #9ca3af; }
+    .pill-tab.inactive:hover { color: #6b7280; }
+
+    .score-bar { height: 4px; border-radius: 2px; background: #f3f4f6; overflow: hidden; }
+    .score-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+
+    .section-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #9ca3af; }
+
+    .stat-chip {
+      background: #f9f8f5; border-radius: 12px; padding: 10px 14px; text-align: center;
+    }
+    .stat-chip .val { font-size: 1.05rem; font-weight: 700; color: #111827; }
+    .stat-chip .lbl { font-size: 0.65rem; color: #9ca3af; margin-top: 2px; font-weight: 500; }
+
+    .review-card { background: #fafaf8; border-radius: 12px; padding: 14px 16px; border-left: 3px solid #e5e7eb; }
+    .review-card.good { border-left-color: #22c55e; }
+    .review-card.bad  { border-left-color: #f87171; }
+
+    input:focus { outline: none; box-shadow: 0 0 0 3px rgba(212,69,0,0.15); border-color: #D44500 !important; }
   </style>
 </head>
-<body class="bg-gray-50 min-h-screen">
+<body class="min-h-screen">
 
   <!-- Header -->
-  <header class="bg-[#D44500] shadow-md">
-    <div class="max-w-5xl mx-auto px-4 py-4 flex items-center gap-3">
-      <div>
-        <h1 class="text-2xl font-bold text-white tracking-tight">SU Professor Finder</h1>
-        <p class="text-orange-100 text-sm">Syracuse University · Course & Professor Intel</p>
+  <header style="background: linear-gradient(135deg, #111827 0%, #1f2937 100%); border-bottom: 1px solid rgba(255,255,255,0.06);">
+    <div class="max-w-4xl mx-auto px-5 py-5 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div style="background: #D44500; width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+        </div>
+        <div>
+          <h1 style="color:white; font-weight:800; font-size:1.05rem; letter-spacing:-0.01em;">SU Professor Finder</h1>
+          <p style="color:#9ca3af; font-size:0.7rem; font-weight:500;">Syracuse University</p>
+        </div>
       </div>
+      <span style="background:rgba(212,69,0,0.2); color:#fb923c; font-size:0.65rem; font-weight:700; padding:4px 10px; border-radius:999px; letter-spacing:0.04em;">BETA</span>
     </div>
   </header>
 
-  <!-- Search -->
-  <div class="max-w-5xl mx-auto px-4 pt-8 pb-4">
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-2">
-      <!-- Tab switcher -->
-      <div class="flex rounded-xl bg-gray-100 p-1 mb-4">
-        <button id="tabProf" onclick="setTab('professor')"
-          class="flex-1 py-2 text-sm font-semibold rounded-lg transition-colors bg-white text-[#D44500] shadow-sm">
-          👤 Professor Name
-        </button>
-        <button id="tabCourse" onclick="setTab('course')"
-          class="flex-1 py-2 text-sm font-semibold rounded-lg transition-colors text-gray-500 hover:text-gray-700">
-          📚 Course / Class
-        </button>
+  <!-- Hero + Search -->
+  <div class="max-w-4xl mx-auto px-5 pt-10 pb-4">
+    <div class="text-center mb-7">
+      <h2 style="font-size:1.75rem; font-weight:800; color:#111827; letter-spacing:-0.02em; line-height:1.2;">Find the right professor,<br><span style="color:#D44500;">before you register.</span></h2>
+      <p style="color:#6b7280; font-size:0.88rem; margin-top:8px;">Ratings, reviews, Easy A detection, and Reddit buzz — all in one place.</p>
+    </div>
+
+    <div class="card p-2">
+      <!-- Tabs -->
+      <div style="display:flex; background:#f3f2ee; border-radius:12px; padding:4px; gap:4px; margin-bottom:12px;">
+        <button id="tabProf" class="pill-tab active" onclick="setTab('professor')">👤 Professor Name</button>
+        <button id="tabCourse" class="pill-tab inactive" onclick="setTab('course')">📚 Course / Class</button>
       </div>
 
-      <!-- Professor search -->
-      <div id="panelProfessor" class="px-4 pb-4">
-        <label class="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Search by Professor Name</label>
-        <div class="flex gap-3">
-          <input id="searchInput" type="text"
-            placeholder="e.g. Smith, Johnson, Dr. Lee..."
-            class="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+      <!-- Professor panel -->
+      <div id="panelProfessor" class="px-2 pb-2">
+        <div class="flex gap-2">
+          <input id="searchInput" type="text" placeholder="Last name, e.g. Smith, Johnson…"
+            style="flex:1; border:1.5px solid #e5e7eb; border-radius:12px; padding:11px 16px; font-size:0.875rem; transition:all 0.15s;"
             onkeydown="if(event.key==='Enter') doSearch()" />
           <button onclick="doSearch()"
-            class="bg-[#D44500] hover:bg-orange-700 text-white font-semibold px-6 py-3 rounded-xl text-sm transition-colors">
+            style="background:#D44500; color:white; font-weight:700; font-size:0.8rem; padding:0 22px; border-radius:12px; transition:background 0.15s; white-space:nowrap;"
+            onmouseover="this.style.background='#b83a00'" onmouseout="this.style.background='#D44500'">
             Search
           </button>
         </div>
-        <p id="searchError" class="text-red-500 text-xs mt-2 hidden"></p>
       </div>
 
-      <!-- Course search -->
-      <div id="panelCourse" class="px-4 pb-4 hidden">
-        <label class="block text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Search by Course Name or Code</label>
-        <div class="flex gap-3">
-          <input id="courseInput" type="text"
-            placeholder="e.g. Calculus, ECS 115, MAT 295, Writing..."
-            class="flex-1 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent"
+      <!-- Course panel -->
+      <div id="panelCourse" class="px-2 pb-2 hidden">
+        <div class="flex gap-2">
+          <input id="courseInput" type="text" placeholder="Course code or name, e.g. MAT 295, Writing…"
+            style="flex:1; border:1.5px solid #e5e7eb; border-radius:12px; padding:11px 16px; font-size:0.875rem; transition:all 0.15s;"
             onkeydown="if(event.key==='Enter') doCourseSearch()" />
           <button onclick="doCourseSearch()"
-            class="bg-[#D44500] hover:bg-orange-700 text-white font-semibold px-6 py-3 rounded-xl text-sm transition-colors">
-            Find Professors
+            style="background:#D44500; color:white; font-weight:700; font-size:0.8rem; padding:0 18px; border-radius:12px; transition:background 0.15s; white-space:nowrap;"
+            onmouseover="this.style.background='#b83a00'" onmouseout="this.style.background='#D44500'">
+            Find Profs
           </button>
         </div>
-        <p class="text-gray-400 text-xs mt-2">Results are ranked: best rating + easiest difficulty + highest retake rate</p>
+        <p style="color:#b0aca3; font-size:0.7rem; margin-top:6px; padding:0 4px;">Ranked by rating · difficulty · retake rate</p>
       </div>
     </div>
   </div>
 
-  <!-- Results area -->
-  <div class="max-w-5xl mx-auto px-4 pb-16" id="mainContent">
-
-    <!-- Search results list -->
-    <div id="searchResults" class="hidden mt-2"></div>
-
-    <!-- Professor detail -->
+  <!-- Results -->
+  <div class="max-w-4xl mx-auto px-5 pb-20">
+    <div id="searchResults" class="hidden mt-3"></div>
     <div id="profDetail" class="hidden mt-4"></div>
-
   </div>
 
   <script>
-    let currentSearch = "";
     let activeTab = "professor";
 
-    // ---- Tab switching ----
     function setTab(tab) {
       activeTab = tab;
       const isProf = tab === "professor";
       document.getElementById("panelProfessor").classList.toggle("hidden", !isProf);
       document.getElementById("panelCourse").classList.toggle("hidden", isProf);
-
-      const tabProf = document.getElementById("tabProf");
-      const tabCourse = document.getElementById("tabCourse");
-      if (isProf) {
-        tabProf.className = "flex-1 py-2 text-sm font-semibold rounded-lg transition-colors bg-white text-[#D44500] shadow-sm";
-        tabCourse.className = "flex-1 py-2 text-sm font-semibold rounded-lg transition-colors text-gray-500 hover:text-gray-700";
-      } else {
-        tabCourse.className = "flex-1 py-2 text-sm font-semibold rounded-lg transition-colors bg-white text-[#D44500] shadow-sm";
-        tabProf.className = "flex-1 py-2 text-sm font-semibold rounded-lg transition-colors text-gray-500 hover:text-gray-700";
-      }
-
-      // Clear results when switching tabs
+      document.getElementById("tabProf").className = "pill-tab " + (isProf ? "active" : "inactive");
+      document.getElementById("tabCourse").className = "pill-tab " + (!isProf ? "active" : "inactive");
       document.getElementById("searchResults").innerHTML = "";
       document.getElementById("searchResults").classList.add("hidden");
       clearDetail();
     }
 
-    // ---- Course search ----
+    // ── Course search ──────────────────────────────────────────────────────
     async function doCourseSearch() {
       const course = document.getElementById("courseInput").value.trim();
       if (!course) return;
-
       clearDetail();
-
-      // Check if we need to build the index first
       let cached = false;
-      try {
-        const statusRes = await fetch("/api/index-status");
-        cached = (await statusRes.json()).cached;
-      } catch (_) {}
-
-      if (!cached) {
-        showLoader("searchResults",
-          `Building SU professor index for the first time — this takes ~10 seconds...`);
-      } else {
-        showLoader("searchResults", `Searching for professors who teach "${course}"...`);
-      }
-
+      try { cached = (await (await fetch("/api/index-status")).json()).cached; } catch(_) {}
+      showLoader("searchResults", cached ? `Searching for "${course}"…` : "Building professor index — takes ~10 sec first time…");
       try {
         const res = await fetch(`/api/course?course=${encodeURIComponent(course)}`);
         const data = await res.json();
-        if (data.error) {
-          showSearchError(data.error);
-          return;
-        }
+        if (data.error) { showSearchError(data.error); return; }
         renderCourseResults(data.results, data.course);
-      } catch (e) {
-        showSearchError("Network error. Is the server running?");
-      }
+      } catch(e) { showSearchError("Network error."); }
     }
 
-    function renderCourseResults(profs, courseQuery) {
+    function renderCourseResults(profs, q) {
       const el = document.getElementById("searchResults");
       if (!profs.length) {
-        el.innerHTML = `<div class="text-center py-10 text-gray-400">No professors found teaching "${escHtml(courseQuery)}" at Syracuse University.</div>`;
-        el.classList.remove("hidden");
-        return;
+        el.innerHTML = `<div class="card p-8 text-center" style="color:#9ca3af;">No professors found teaching <strong>${escHtml(q)}</strong> at Syracuse.</div>`;
+        el.classList.remove("hidden"); return;
       }
-
       el.innerHTML = `
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 mb-3">
-          <h2 class="font-bold text-gray-800 text-base">Professors teaching: <span class="text-[#D44500]">${escHtml(courseQuery)}</span></h2>
-          <p class="text-xs text-gray-400 mt-1">Ranked by overall rating, difficulty, and student retake rate · click any professor for full details</p>
+        <div style="margin-bottom:12px;">
+          <p style="font-weight:700; font-size:0.95rem; color:#111827;">Professors teaching <span style="color:#D44500;">${escHtml(q)}</span></p>
+          <p style="color:#9ca3af; font-size:0.7rem; margin-top:2px;">Ranked by rating · ease · retake rate — click for full profile</p>
         </div>
-        <div class="space-y-3">
-          ${profs.map((p, i) => courseRankCard(p, i)).join("")}
-        </div>
-      `;
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          ${profs.map((p,i) => courseCard(p,i)).join("")}
+        </div>`;
       el.classList.remove("hidden");
     }
 
-    function courseRankCard(p, index) {
-      const rating   = p.avgRating   != null ? p.avgRating.toFixed(1)   : "N/A";
-      const diff     = p.avgDifficulty != null ? p.avgDifficulty.toFixed(1) : "N/A";
-      const wtag     = p.wouldTakeAgainPercent >= 0 ? Math.round(p.wouldTakeAgainPercent) + "%" : "N/A";
-      const score    = p.rankScore ?? 0;
-      const ratingBg_ = ratingBg(p.avgRating);
-      const diffCls  = diffText(p.avgDifficulty).cls;
-
-      // Medal for top 3
-      const medals = ["🥇", "🥈", "🥉"];
-      const medal  = index < 3 ? `<span class="text-xl">${medals[index]}</span>` : `<span class="text-sm font-bold text-gray-400 w-7 text-center">#${index+1}</span>`;
-
-      // Easy A badge
+    function courseCard(p, i) {
+      const rating = p.avgRating != null ? p.avgRating.toFixed(1) : "?";
+      const diff   = p.avgDifficulty != null ? p.avgDifficulty.toFixed(1) : "?";
+      const wtag   = p.wouldTakeAgainPercent >= 0 ? Math.round(p.wouldTakeAgainPercent) + "%" : "N/A";
+      const score  = p.rankScore ?? 0;
+      const bg     = ratingGrad(p.avgRating);
       const isEasyA = p.avgDifficulty != null && p.avgDifficulty <= 2.5 && (p.wouldTakeAgainPercent < 0 || p.wouldTakeAgainPercent >= 60);
-      const easyATag = isEasyA ? `<span class="tag bg-green-50 text-green-600 border border-green-200">✅ Easy A likely</span>` : "";
-
-      // Courses taught
-      const courseTags = (p.courseCodes || []).slice(0, 4).map(c =>
-        `<span class="tag bg-orange-50 text-orange-600">${escHtml(c.courseName)}</span>`
-      ).join("");
-
-      // Score bar (0–100)
-      const barW = Math.round(score);
-      const barColor = score >= 60 ? "bg-green-400" : score >= 40 ? "bg-yellow-400" : "bg-red-400";
+      const medals = ["🥇","🥈","🥉"];
+      const rank   = i < 3 ? `<span style="font-size:1.3rem;">${medals[i]}</span>` : `<span style="font-weight:700;color:#d1d5db;font-size:0.85rem;min-width:24px;text-align:center;">#${i+1}</span>`;
+      const barColor = score >= 60 ? "#22c55e" : score >= 40 ? "#f59e0b" : "#f87171";
+      const initials = ((p.firstName||"")[0]||"") + ((p.lastName||"")[0]||"");
 
       return `
-        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4 card-hover cursor-pointer fade-in"
-             onclick="loadProfessor('${p.id}', '${escHtml(p.firstName)} ${escHtml(p.lastName)}')">
-          <div class="flex items-center gap-3">
-            ${medal}
-            <div class="w-14 h-14 flex-shrink-0 rounded-xl flex items-center justify-center text-white font-bold text-lg ${ratingBg_}">
-              ${rating !== "N/A" ? rating : "?"}
-            </div>
-            <div class="flex-1 min-w-0">
-              <div class="flex items-center gap-2 flex-wrap">
-                <span class="font-bold text-gray-800">${escHtml(p.firstName)} ${escHtml(p.lastName)}</span>
-                ${easyATag}
+        <div class="card card-hover fade-in" style="padding:16px 18px;" onclick="loadProfessor('${p.id}','${escHtml(p.firstName)} ${escHtml(p.lastName)}')">
+          <div style="display:flex;align-items:center;gap:12px;">
+            ${rank}
+            <div class="rating-avatar" style="background:${bg};">${rating !== "?" ? rating : "?"}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                <span style="font-weight:700;font-size:0.95rem;color:#111827;">${escHtml(p.firstName)} ${escHtml(p.lastName)}</span>
+                ${isEasyA ? `<span class="tag" style="background:#dcfce7;color:#16a34a;">✓ Easy A</span>` : ""}
               </div>
-              <p class="text-xs text-gray-500">${escHtml(p.department || "Syracuse University")}</p>
-
-              <div class="flex flex-wrap gap-2 mt-2">
-                <span class="tag bg-gray-100 text-gray-600">⭐ ${rating}/5</span>
-                <span class="tag bg-gray-100 ${diffCls}">🔥 Difficulty ${diff}/5</span>
-                <span class="tag bg-gray-100 text-gray-600">🔁 ${wtag} retake</span>
-                <span class="tag bg-gray-100 text-gray-500">${p.numRatings} reviews</span>
+              <p style="font-size:0.72rem;color:#9ca3af;margin-top:1px;">${escHtml(p.department||"Syracuse University")}</p>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;">
+                <span class="tag" style="background:#fef3c7;color:#b45309;">⭐ ${rating}/5</span>
+                <span class="tag" style="background:#f5f5f4;color:${diff<=2?"#16a34a":diff<=3.5?"#d97706":"#dc2626"};">🔥 ${diff}/5</span>
+                <span class="tag" style="background:#f5f5f4;color:#6b7280;">🔁 ${wtag}</span>
+                <span class="tag" style="background:#f5f5f4;color:#9ca3af;">${p.numRatings} reviews</span>
               </div>
-
-              ${courseTags ? `<div class="flex flex-wrap gap-1 mt-2">${courseTags}</div>` : ""}
-
-              <!-- Rank score bar -->
-              <div class="mt-3">
-                <div class="flex items-center justify-between mb-1">
-                  <span class="text-xs text-gray-400">Overall Score</span>
-                  <span class="text-xs font-bold text-gray-600">${score}/100</span>
+              <div style="margin-top:8px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
+                  <span style="font-size:0.65rem;color:#c9c6be;">Score</span>
+                  <span style="font-size:0.65rem;font-weight:700;color:#6b7280;">${score}/100</span>
                 </div>
-                <div class="w-full bg-gray-100 rounded-full h-1.5">
-                  <div class="${barColor} h-1.5 rounded-full transition-all" style="width:${barW}%"></div>
-                </div>
+                <div class="score-bar"><div class="score-fill" style="width:${score}%;background:${barColor};"></div></div>
               </div>
             </div>
-            <div class="text-gray-300 text-xl">›</div>
+            <svg width="16" height="16" fill="none" stroke="#d1d5db" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
           </div>
-        </div>
-      `;
+        </div>`;
     }
 
+    // ── Professor search ───────────────────────────────────────────────────
     async function doSearch() {
       const name = document.getElementById("searchInput").value.trim();
       if (!name) return;
-      currentSearch = name;
-
       clearDetail();
-      showLoader("searchResults", "Searching Rate My Professors...");
-
+      showLoader("searchResults", "Searching Rate My Professors…");
       try {
         const res = await fetch(`/api/search?name=${encodeURIComponent(name)}`);
         const data = await res.json();
-        if (data.error) return showError("searchError", data.error);
+        if (data.error) { showSearchError(data.error); return; }
         renderSearchResults(data.results);
-      } catch (e) {
-        showSearchError("Network error. Is the server running?");
-      }
+      } catch(e) { showSearchError("Network error."); }
     }
 
     function renderSearchResults(profs) {
       const el = document.getElementById("searchResults");
       if (!profs.length) {
-        el.innerHTML = `<div class="text-center py-10 text-gray-400">No professors found at Syracuse University matching that name.</div>`;
-        el.classList.remove("hidden");
-        return;
+        el.innerHTML = `<div class="card p-8 text-center" style="color:#9ca3af;">No professors found at Syracuse University.</div>`;
+        el.classList.remove("hidden"); return;
       }
-
       el.innerHTML = `
-        <p class="text-xs text-gray-400 mb-3">${profs.length} result${profs.length !== 1 ? "s" : ""} found — click a professor to see full details</p>
-        <div class="grid gap-3">
+        <p style="font-size:0.72rem;color:#9ca3af;margin-bottom:8px;">${profs.length} result${profs.length!==1?"s":""} — click to expand</p>
+        <div style="display:flex;flex-direction:column;gap:8px;">
           ${profs.map(p => profCard(p)).join("")}
-        </div>
-      `;
+        </div>`;
       el.classList.remove("hidden");
     }
 
     function profCard(p) {
-      const rating = p.avgRating ?? "N/A";
-      const diff = p.avgDifficulty ?? "N/A";
-      const wtag = p.wouldTakeAgainPercent >= 0 ? Math.round(p.wouldTakeAgainPercent) + "%" : "N/A";
-      const ratingColor = ratingBg(p.avgRating);
-      const diffLabel = diffText(p.avgDifficulty);
-
+      const rating = p.avgRating != null ? p.avgRating.toFixed(1) : "?";
+      const diff   = p.avgDifficulty != null ? p.avgDifficulty.toFixed(1) : "?";
+      const wtag   = p.wouldTakeAgainPercent >= 0 ? Math.round(p.wouldTakeAgainPercent)+"%" : "N/A";
+      const bg     = ratingGrad(p.avgRating);
       return `
-        <div class="bg-white rounded-xl border border-gray-100 shadow-sm p-4 card-hover cursor-pointer fade-in flex items-center gap-4"
-             onclick="loadProfessor('${p.id}', '${escHtml(p.firstName)} ${escHtml(p.lastName)}')">
-          <div class="w-16 h-16 flex-shrink-0 rounded-full flex items-center justify-center text-white font-bold text-xl ${ratingColor}">
-            ${rating !== "N/A" ? rating.toFixed(1) : "?"}
-          </div>
-          <div class="flex-1 min-w-0">
-            <h3 class="font-bold text-gray-800 text-base">${escHtml(p.firstName)} ${escHtml(p.lastName)}</h3>
-            <p class="text-sm text-gray-500">${escHtml(p.department || "Unknown Department")}</p>
-            <div class="flex flex-wrap gap-2 mt-2">
-              <span class="tag bg-gray-100 text-gray-600">⭐ ${rating !== "N/A" ? rating.toFixed(1) + "/5" : "No rating"}</span>
-              <span class="tag bg-gray-100 ${diffLabel.cls}">Difficulty: ${diff !== "N/A" ? diff.toFixed(1) + "/5" : "N/A"}</span>
-              <span class="tag bg-gray-100 text-gray-600">🔁 ${wtag} would retake</span>
-              <span class="tag bg-gray-100 text-gray-500">${p.numRatings} review${p.numRatings !== 1 ? "s" : ""}</span>
+        <div class="card card-hover fade-in" style="padding:14px 16px;display:flex;align-items:center;gap:14px;"
+             onclick="loadProfessor('${p.id}','${escHtml(p.firstName)} ${escHtml(p.lastName)}')">
+          <div class="rating-avatar" style="background:${bg};">${rating}</div>
+          <div style="flex:1;min-width:0;">
+            <p style="font-weight:700;font-size:0.95rem;color:#111827;">${escHtml(p.firstName)} ${escHtml(p.lastName)}</p>
+            <p style="font-size:0.72rem;color:#9ca3af;">${escHtml(p.department||"Unknown Department")}</p>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:6px;">
+              <span class="tag" style="background:#fef3c7;color:#b45309;">⭐ ${rating}/5</span>
+              <span class="tag" style="background:#f5f5f4;color:${diff<=2?"#16a34a":diff<=3.5?"#d97706":"#dc2626"};">Difficulty ${diff}/5</span>
+              <span class="tag" style="background:#f5f5f4;color:#6b7280;">🔁 ${wtag}</span>
+              <span class="tag" style="background:#f5f5f4;color:#9ca3af;">${p.numRatings} reviews</span>
             </div>
           </div>
-          <div class="text-gray-300 text-xl">›</div>
-        </div>
-      `;
+          <svg width="16" height="16" fill="none" stroke="#d1d5db" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        </div>`;
     }
 
+    // ── Professor detail ───────────────────────────────────────────────────
     async function loadProfessor(id, name) {
-      document.getElementById("searchResults").innerHTML += "";
-      showLoader("profDetail", `Loading details for ${name}...`);
+      showLoader("profDetail", `Loading ${name}…`);
       document.getElementById("profDetail").classList.remove("hidden");
-      document.getElementById("profDetail").scrollIntoView({ behavior: "smooth", block: "start" });
-
+      document.getElementById("profDetail").scrollIntoView({ behavior:"smooth", block:"start" });
       try {
         const res = await fetch(`/api/professor/${encodeURIComponent(id)}`);
         const data = await res.json();
-        if (data.error) {
-          document.getElementById("profDetail").innerHTML = `<div class="text-red-400 text-sm p-4">${data.error}</div>`;
-          return;
-        }
+        if (data.error) { document.getElementById("profDetail").innerHTML=`<div class="card p-6 text-red-400 text-sm">${data.error}</div>`; return; }
         renderProfDetail(data);
-      } catch (e) {
-        document.getElementById("profDetail").innerHTML = `<div class="text-red-400 text-sm p-4">Failed to load professor details.</div>`;
-      }
+      } catch(e) { document.getElementById("profDetail").innerHTML=`<div class="card p-6 text-red-400 text-sm">Failed to load.</div>`; }
     }
 
     function renderProfDetail(data) {
-      const { professor: p, ratings, easyA, examMentions, redditPosts } = data;
-
-      const ratingColor = ratingBg(p.avgRating);
-      const diffLabel = diffText(p.avgDifficulty);
+      const { professor:p, ratings, easyA, examMentions, redditPosts } = data;
+      const bg   = ratingGrad(p.avgRating);
       const wtag = p.wouldTakeAgainPercent >= 0 ? Math.round(p.wouldTakeAgainPercent) : null;
+      const diff = p.avgDifficulty;
+      const diffColor = diff==null?"#9ca3af":diff<=2?"#16a34a":diff<=3.5?"#d97706":"#dc2626";
 
-      const easyABadge = easyA
-        ? easyA.is_easy_a
-          ? `<div class="flex items-center gap-2 bg-green-50 border border-green-200 rounded-xl p-3">
-               <span class="text-2xl">✅</span>
-               <div>
-                 <p class="font-bold text-green-700 text-sm">Likely an Easy A</p>
-                 <p class="text-xs text-green-600">${easyA.reasons.join(" · ")}</p>
-               </div>
-             </div>`
-          : `<div class="flex items-center gap-2 bg-yellow-50 border border-yellow-200 rounded-xl p-3">
-               <span class="text-2xl">⚠️</span>
-               <div>
-                 <p class="font-bold text-yellow-700 text-sm">Not an Easy A</p>
-                 <p class="text-xs text-yellow-600">${easyA.reasons.length ? easyA.reasons.join(" · ") : "Moderate to high difficulty reported"}</p>
-               </div>
-             </div>`
+      const easyABlock = easyA ? easyA.is_easy_a
+        ? `<div style="background:#f0fdf4;border:1.5px solid #bbf7d0;border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:center;">
+             <span style="font-size:1.4rem;">✅</span>
+             <div><p style="font-weight:700;color:#15803d;font-size:0.85rem;">Likely an Easy A</p>
+             <p style="color:#16a34a;font-size:0.72rem;margin-top:1px;">${easyA.reasons.join(" · ")}</p></div></div>`
+        : `<div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:12px;padding:12px 14px;display:flex;gap:10px;align-items:center;">
+             <span style="font-size:1.4rem;">⚠️</span>
+             <div><p style="font-weight:700;color:#b45309;font-size:0.85rem;">Not an Easy A</p>
+             <p style="color:#d97706;font-size:0.72rem;margin-top:1px;">${easyA.reasons.length?easyA.reasons.join(" · "):"Moderate to high difficulty"}</p></div></div>`
         : "";
 
-      const gradeDistHtml = easyA && Object.keys(easyA.grade_distribution).length
-        ? `<div class="mt-4">
-             <p class="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Grade Distribution (from reviews)</p>
-             <div class="flex flex-wrap gap-2">
-               ${Object.entries(easyA.grade_distribution).sort((a,b) => b[1]-a[1]).map(([g, c]) =>
-                 `<div class="bg-gray-50 border border-gray-200 rounded-lg px-3 py-1 text-center">
-                    <div class="font-bold text-sm text-gray-800">${escHtml(g)}</div>
-                    <div class="text-xs text-gray-400">${c}x</div>
-                  </div>`
-               ).join("")}
-             </div>
-           </div>`
-        : "";
+      const gradeDist = easyA && Object.keys(easyA.grade_distribution||{}).length
+        ? `<div style="margin-top:16px;">
+             <p class="section-label" style="margin-bottom:6px;">Grade Distribution</p>
+             <div style="display:flex;flex-wrap:wrap;gap:6px;">
+               ${Object.entries(easyA.grade_distribution).sort((a,b)=>b[1]-a[1]).map(([g,c])=>`
+                 <div style="background:#f9f8f5;border:1px solid #e5e4e0;border-radius:8px;padding:6px 12px;text-align:center;">
+                   <div style="font-weight:700;font-size:0.85rem;color:#111827;">${escHtml(g)}</div>
+                   <div style="font-size:0.65rem;color:#9ca3af;">${c}x</div></div>`).join("")}
+             </div></div>` : "";
 
-      const coursesHtml = p.courseCodes && p.courseCodes.length
-        ? `<div class="mt-4">
-             <p class="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Courses Taught</p>
-             <div class="flex flex-wrap gap-2">
-               ${p.courseCodes.slice(0, 12).map(c =>
-                 `<span class="tag bg-orange-50 text-orange-700 border border-orange-100">${escHtml(c.courseName)} <span class="text-orange-400">(${c.courseCount})</span></span>`
-               ).join("")}
-             </div>
-           </div>`
-        : "";
-
-      const examHtml = examMentions.length
-        ? `<div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-             <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2">
-               <span>📝</span> Exam & Test Mentions
-               <span class="tag bg-blue-100 text-blue-600 ml-1">${examMentions.length} reviews</span>
-             </h3>
-             <div class="space-y-2 max-h-60 overflow-y-auto pr-1">
-               ${examMentions.slice(0, 8).map(m => `
-                 <div class="bg-gray-50 rounded-lg p-3">
-                   <p class="text-xs font-semibold text-gray-400 mb-1">${m.class || "Unknown Course"}</p>
-                   <p class="text-sm text-gray-700 italic">"${escHtml(m.comment)}"</p>
-                   <div class="flex gap-1 mt-1">
-                     ${m.keywords.map(k => `<span class="tag bg-blue-50 text-blue-500">${k}</span>`).join("")}
-                   </div>
-                 </div>
-               `).join("")}
-             </div>
-           </div>`
-        : `<div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-             <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2"><span>📝</span> Exam & Test Mentions</h3>
-             <p class="text-sm text-gray-400">No specific exam mentions found in recent reviews.</p>
-           </div>`;
+      const courses = p.courseCodes?.length
+        ? `<div style="margin-top:16px;"><p class="section-label" style="margin-bottom:6px;">Courses Taught</p>
+           <div style="display:flex;flex-wrap:wrap;gap:5px;">
+             ${p.courseCodes.slice(0,12).map(c=>`<span class="tag" style="background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;">${escHtml(c.courseName)} <span style="color:#fdba74;margin-left:3px;">${c.courseCount}</span></span>`).join("")}
+           </div></div>` : "";
 
       const reviewsHtml = ratings.length
-        ? ratings.slice(0, 8).map(r => {
-            const grade = r.grade ? `<span class="tag bg-indigo-50 text-indigo-600">Grade: ${escHtml(r.grade)}</span>` : "";
-            const retake = r.wouldTakeAgain !== null
-              ? r.wouldTakeAgain
-                ? `<span class="tag bg-green-50 text-green-600">Would retake</span>`
-                : `<span class="tag bg-red-50 text-red-400">Wouldn't retake</span>`
-              : "";
-            return `
-              <div class="bg-gray-50 rounded-xl p-4 border border-gray-100">
-                <div class="flex items-center justify-between mb-2 flex-wrap gap-2">
-                  <div class="flex gap-2 flex-wrap">
-                    ${r.class ? `<span class="tag bg-orange-50 text-orange-600">${escHtml(r.class)}</span>` : ""}
-                    ${grade}
-                    ${retake}
-                  </div>
-                  <div class="flex gap-3 text-xs text-gray-400">
-                    <span>Helpful: ${r.helpfulRating}/5</span>
-                    <span>Clarity: ${r.clarityRating}/5</span>
-                    <span class="${diffText(r.difficultyRating).cls}">Diff: ${r.difficultyRating}/5</span>
-                  </div>
+        ? ratings.slice(0,8).map(r=>{
+            const good = r.wouldTakeAgain === true;
+            const bad  = r.wouldTakeAgain === false;
+            return `<div class="review-card ${good?"good":bad?"bad":""}" style="margin-bottom:8px;">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px;margin-bottom:6px;">
+                <div style="display:flex;gap:5px;flex-wrap:wrap;">
+                  ${r.class?`<span class="tag" style="background:#fff7ed;color:#c2410c;">${escHtml(r.class)}</span>`:""}
+                  ${r.grade?`<span class="tag" style="background:#eef2ff;color:#4f46e5;">Grade: ${escHtml(r.grade)}</span>`:""}
+                  ${r.wouldTakeAgain===true?`<span class="tag" style="background:#f0fdf4;color:#16a34a;">Would retake</span>`:""}
+                  ${r.wouldTakeAgain===false?`<span class="tag" style="background:#fef2f2;color:#dc2626;">Wouldn't retake</span>`:""}
                 </div>
-                ${r.comment ? `<p class="text-sm text-gray-700 italic">"${escHtml(r.comment)}"</p>` : `<p class="text-sm text-gray-400 italic">No comment left.</p>`}
+                <div style="display:flex;gap:10px;font-size:0.65rem;color:#9ca3af;">
+                  <span>Helpful ${r.helpfulRating}/5</span>
+                  <span>Clarity ${r.clarityRating}/5</span>
+                  <span style="color:${r.difficultyRating<=2?"#16a34a":r.difficultyRating<=3.5?"#d97706":"#dc2626"}">Diff ${r.difficultyRating}/5</span>
+                </div>
               </div>
-            `;
+              ${r.comment?`<p style="font-size:0.82rem;color:#374151;font-style:italic;line-height:1.5;">"${escHtml(r.comment)}"</p>`:`<p style="font-size:0.8rem;color:#9ca3af;font-style:italic;">No comment.</p>`}
+            </div>`;
           }).join("")
-        : `<p class="text-sm text-gray-400">No reviews available yet.</p>`;
+        : `<p style="font-size:0.82rem;color:#9ca3af;">No reviews yet.</p>`;
 
-      const redditHtml = redditPosts.length
-        ? `<div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-             <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2">
-               <svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>
+      const examBlock = examMentions.length
+        ? `<div class="card" style="padding:20px;">
+             <p style="font-weight:700;font-size:0.88rem;color:#111827;margin-bottom:12px;">📝 Exam & Test Mentions <span class="tag" style="background:#dbeafe;color:#2563eb;margin-left:4px;">${examMentions.length} reviews</span></p>
+             <div style="display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;">
+               ${examMentions.slice(0,8).map(m=>`
+                 <div style="background:#f9f8f5;border-radius:10px;padding:10px 12px;">
+                   <p style="font-size:0.65rem;font-weight:600;color:#9ca3af;margin-bottom:3px;">${m.class||"Unknown Course"}</p>
+                   <p style="font-size:0.8rem;color:#374151;font-style:italic;">"${escHtml(m.comment)}"</p>
+                   <div style="display:flex;gap:4px;margin-top:4px;">${m.keywords.map(k=>`<span class="tag" style="background:#dbeafe;color:#3b82f6;">${k}</span>`).join("")}</div>
+                 </div>`).join("")}
+             </div></div>`
+        : `<div class="card" style="padding:20px;">
+             <p style="font-weight:700;font-size:0.88rem;color:#111827;margin-bottom:4px;">📝 Exam & Test Mentions</p>
+             <p style="font-size:0.8rem;color:#9ca3af;">No exam mentions in recent reviews.</p></div>`;
+
+      const redditBlock = redditPosts.length
+        ? `<div class="card" style="padding:20px;">
+             <p style="font-weight:700;font-size:0.88rem;color:#111827;margin-bottom:12px;display:flex;align-items:center;gap:6px;">
+               <svg width="16" height="16" fill="#f97316" viewBox="0 0 24 24"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>
                Reddit Mentions
-               <span class="tag bg-orange-100 text-orange-600 ml-1">${redditPosts.length} posts</span>
-             </h3>
-             <div class="space-y-3">
-               ${redditPosts.slice(0, 5).map(post => `
-                 <a href="${escHtml(post.url)}" target="_blank" rel="noopener" class="block bg-gray-50 rounded-xl p-3 border border-gray-100 hover:border-orange-200 transition-colors">
-                   <p class="text-xs font-semibold text-orange-500 mb-1">r/${escHtml(post.subreddit)} · ${post.score} pts · ${post.num_comments} comments</p>
-                   <p class="text-sm font-semibold text-gray-800">${escHtml(post.title)}</p>
-                   ${post.selftext ? `<p class="text-xs text-gray-500 mt-1 line-clamp-2">${escHtml(post.selftext.slice(0, 200))}</p>` : ""}
-                 </a>
-               `).join("")}
-             </div>
-           </div>`
-        : `<div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-             <h3 class="font-bold text-gray-800 mb-1 flex items-center gap-2">
-               <svg class="w-5 h-5 text-gray-300" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>
-               Reddit Mentions
-             </h3>
-             <p class="text-sm text-gray-400">No Reddit posts found for this professor.</p>
-           </div>`;
+               <span class="tag" style="background:#fff7ed;color:#c2410c;">${redditPosts.length} posts</span>
+             </p>
+             <div style="display:flex;flex-direction:column;gap:8px;">
+               ${redditPosts.slice(0,5).map(post=>`
+                 <a href="${escHtml(post.url)}" target="_blank" rel="noopener"
+                    style="display:block;background:#f9f8f5;border-radius:10px;padding:10px 12px;text-decoration:none;border:1px solid transparent;transition:border-color 0.15s;"
+                    onmouseover="this.style.borderColor='#fed7aa'" onmouseout="this.style.borderColor='transparent'">
+                   <p style="font-size:0.65rem;font-weight:600;color:#f97316;margin-bottom:3px;">r/${escHtml(post.subreddit)} · ${post.score} pts · ${post.num_comments} comments</p>
+                   <p style="font-size:0.82rem;font-weight:600;color:#111827;">${escHtml(post.title)}</p>
+                   ${post.selftext?`<p style="font-size:0.72rem;color:#6b7280;margin-top:3px;">${escHtml(post.selftext.slice(0,180))}…</p>`:""}
+                 </a>`).join("")}
+             </div></div>`
+        : `<div class="card" style="padding:20px;">
+             <p style="font-weight:700;font-size:0.88rem;color:#111827;margin-bottom:4px;">Reddit Mentions</p>
+             <p style="font-size:0.8rem;color:#9ca3af;">No Reddit posts found for this professor.</p></div>`;
 
       document.getElementById("profDetail").innerHTML = `
-        <div class="space-y-4 fade-in">
+        <div style="display:flex;flex-direction:column;gap:12px;" class="fade-in">
 
-          <!-- Header card -->
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-            <div class="flex items-start gap-5 flex-wrap">
-              <div class="w-20 h-20 flex-shrink-0 rounded-2xl flex items-center justify-center text-white font-bold text-2xl ${ratingColor}">
-                ${p.avgRating != null ? p.avgRating.toFixed(1) : "?"}
+          <!-- Profile header -->
+          <div class="card" style="padding:22px;">
+            <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+              <div style="width:72px;height:72px;border-radius:18px;background:${bg};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.4rem;color:white;flex-shrink:0;">
+                ${p.avgRating!=null?p.avgRating.toFixed(1):"?"}
               </div>
-              <div class="flex-1 min-w-0">
-                <div class="flex items-center gap-3 flex-wrap">
-                  <h2 class="text-2xl font-bold text-gray-900">${escHtml(p.name)}</h2>
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                  <h2 style="font-size:1.25rem;font-weight:800;color:#111827;letter-spacing:-0.01em;">${escHtml(p.name)}</h2>
                   <a href="${escHtml(p.rmpUrl)}" target="_blank" rel="noopener"
-                     class="tag bg-orange-50 text-orange-600 border border-orange-200 hover:bg-orange-100 transition-colors">
-                    View on RMP ↗
-                  </a>
+                     class="tag" style="background:#fff7ed;color:#c2410c;border:1px solid #fed7aa;text-decoration:none;">RMP ↗</a>
                 </div>
-                <p class="text-gray-500 mt-1">${escHtml(p.department || "Syracuse University")}</p>
-
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-4">
-                  ${statBox("⭐ Rating", p.avgRating != null ? p.avgRating.toFixed(1) + " / 5" : "N/A", "")}
-                  ${statBox("🔥 Difficulty", p.avgDifficulty != null ? p.avgDifficulty.toFixed(1) + " / 5" : "N/A", diffLabel.cls)}
-                  ${statBox("🔁 Would Retake", wtag != null ? wtag + "%" : "N/A", "")}
-                  ${statBox("📊 # Reviews", p.numRatings ?? 0, "")}
+                <p style="color:#9ca3af;font-size:0.78rem;margin-top:2px;">${escHtml(p.department||"Syracuse University")}</p>
+                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px;">
+                  <div class="stat-chip"><div class="val" style="color:${p.avgRating>=4?"#16a34a":p.avgRating>=3?"#d97706":"#dc2626"};">${p.avgRating!=null?p.avgRating.toFixed(1):"—"}</div><div class="lbl">Rating</div></div>
+                  <div class="stat-chip"><div class="val" style="color:${diffColor};">${p.avgDifficulty!=null?p.avgDifficulty.toFixed(1):"—"}</div><div class="lbl">Difficulty</div></div>
+                  <div class="stat-chip"><div class="val">${wtag!=null?wtag+"%":"—"}</div><div class="lbl">Retake</div></div>
+                  <div class="stat-chip"><div class="val">${p.numRatings??0}</div><div class="lbl">Reviews</div></div>
                 </div>
               </div>
             </div>
-
-            ${easyABadge ? `<div class="mt-4">${easyABadge}</div>` : ""}
-            ${gradeDistHtml}
-            ${coursesHtml}
+            ${easyABlock?`<div style="margin-top:16px;">${easyABlock}</div>`:""}
+            ${gradeDist}
+            ${courses}
           </div>
 
-          <!-- Exam mentions -->
-          ${examHtml}
+          ${examBlock}
 
-          <!-- Student Reviews -->
-          <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-            <h3 class="font-bold text-gray-800 mb-3 flex items-center gap-2">
-              <span>💬</span> Student Reviews
-              <span class="tag bg-gray-100 text-gray-500 ml-1">${ratings.length} shown</span>
-            </h3>
-            <div class="space-y-3">
-              ${reviewsHtml}
-            </div>
+          <!-- Reviews -->
+          <div class="card" style="padding:20px;">
+            <p style="font-weight:700;font-size:0.88rem;color:#111827;margin-bottom:12px;">💬 Student Reviews <span class="tag" style="background:#f5f5f4;color:#6b7280;margin-left:4px;">${ratings.length} shown</span></p>
+            ${reviewsHtml}
           </div>
 
-          <!-- Reddit -->
-          ${redditHtml}
-
-        </div>
-      `;
+          ${redditBlock}
+        </div>`;
     }
 
-    // ---- Helpers ----
-
-    function statBox(label, value, cls) {
-      return `
-        <div class="bg-gray-50 rounded-xl p-3 text-center">
-          <p class="text-xs text-gray-400 mb-1">${label}</p>
-          <p class="font-bold text-gray-800 ${cls}">${value}</p>
-        </div>
-      `;
+    // ── Helpers ────────────────────────────────────────────────────────────
+    function ratingGrad(r) {
+      if (r == null) return "#d1d5db";
+      if (r >= 4.0) return "linear-gradient(135deg,#22c55e,#16a34a)";
+      if (r >= 3.0) return "linear-gradient(135deg,#fbbf24,#f59e0b)";
+      if (r >= 2.0) return "linear-gradient(135deg,#fb923c,#ea580c)";
+      return "linear-gradient(135deg,#f87171,#dc2626)";
     }
 
-    function ratingBg(r) {
-      if (r == null) return "bg-gray-300";
-      if (r >= 4.0) return "bg-green-500";
-      if (r >= 3.0) return "bg-yellow-400";
-      if (r >= 2.0) return "bg-orange-400";
-      return "bg-red-500";
-    }
-
-    function diffText(d) {
-      if (d == null) return { cls: "text-gray-400" };
-      if (d <= 2.0) return { cls: "difficulty-low" };
-      if (d <= 3.5) return { cls: "difficulty-med" };
-      return { cls: "difficulty-high" };
-    }
-
-    function showLoader(targetId, msg) {
-      const el = document.getElementById(targetId);
+    function showLoader(id, msg) {
+      const el = document.getElementById(id);
       el.innerHTML = `
-        <div class="flex items-center justify-center gap-3 py-10 text-gray-400">
-          <svg class="spinner w-5 h-5 text-orange-400" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+        <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:48px 0;color:#9ca3af;">
+          <svg class="spinner" width="18" height="18" fill="none" viewBox="0 0 24 24" style="color:#D44500;">
+            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity=".25"/>
+            <path fill="currentColor" opacity=".75" d="M4 12a8 8 0 018-8v8z"/>
           </svg>
-          <span class="text-sm">${msg}</span>
-        </div>
-      `;
+          <span style="font-size:0.83rem;">${msg}</span>
+        </div>`;
       el.classList.remove("hidden");
     }
 
     function clearDetail() {
       const el = document.getElementById("profDetail");
-      el.innerHTML = "";
-      el.classList.add("hidden");
+      el.innerHTML = ""; el.classList.add("hidden");
     }
 
     function showSearchError(msg) {
       const el = document.getElementById("searchResults");
-      el.innerHTML = `<div class="text-red-400 text-sm py-4">${msg}</div>`;
+      el.innerHTML = `<div class="card" style="padding:16px;color:#f87171;font-size:0.83rem;">${msg}</div>`;
       el.classList.remove("hidden");
     }
 
-    function escHtml(str) {
-      if (!str) return "";
-      return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    function escHtml(s) {
+      if (!s) return "";
+      return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
     }
   </script>
 </body>

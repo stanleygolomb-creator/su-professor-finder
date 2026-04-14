@@ -4,57 +4,278 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SU Professor Finder — Get Access</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50 min-h-screen flex flex-col">
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  <header class="bg-[#D44500]">
-    <div class="max-w-2xl mx-auto px-4 py-4">
-      <h1 class="text-xl font-bold text-white">SU Professor Finder</h1>
-      <p class="text-orange-100 text-sm">Syracuse University · Course & Professor Intel</p>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f5f4f0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, #111827, #1f2937);
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .header-icon {
+      width: 38px; height: 38px;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    .header-text h1 {
+      color: #fff;
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    .header-text p {
+      color: #9ca3af;
+      font-size: 12px;
+      margin-top: 1px;
+    }
+
+    /* ── Main ── */
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 20px;
+    }
+
+    .card {
+      background: #fff;
+      border-radius: 20px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      padding: 48px 40px;
+      max-width: 460px;
+      width: 100%;
+      text-align: center;
+    }
+
+    .price-badge {
+      display: inline-flex;
+      align-items: baseline;
+      gap: 4px;
+      background: linear-gradient(135deg, #111827, #1f2937);
+      color: #fff;
+      border-radius: 50px;
+      padding: 8px 22px;
+      margin-bottom: 28px;
+    }
+    .price-badge .dollar {
+      font-size: 18px;
+      font-weight: 600;
+      opacity: 0.8;
+    }
+    .price-badge .amount {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -1px;
+    }
+    .price-badge .period {
+      font-size: 13px;
+      opacity: 0.7;
+      margin-left: 2px;
+    }
+
+    h2 {
+      font-size: 26px;
+      font-weight: 800;
+      color: #111827;
+      letter-spacing: -0.5px;
+      margin-bottom: 8px;
+    }
+    .subtitle {
+      color: #6b7280;
+      font-size: 15px;
+      margin-bottom: 36px;
+      line-height: 1.5;
+    }
+
+    /* ── Feature list ── */
+    .features {
+      list-style: none;
+      text-align: left;
+      margin-bottom: 36px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .features li {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .check {
+      width: 22px; height: 22px;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+    .check svg {
+      width: 12px; height: 12px;
+      stroke: #fff;
+      stroke-width: 2.5;
+      fill: none;
+    }
+    .features li span {
+      font-size: 14px;
+      color: #374151;
+      line-height: 1.5;
+    }
+
+    /* ── CTA ── */
+    .cta-btn {
+      display: block;
+      width: 100%;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      color: #fff;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 16px 24px;
+      border-radius: 14px;
+      border: none;
+      cursor: pointer;
+      text-decoration: none;
+      transition: opacity 0.15s, transform 0.1s;
+      letter-spacing: -0.2px;
+    }
+    .cta-btn:hover { opacity: 0.92; transform: translateY(-1px); }
+    .cta-btn:active { transform: translateY(0); }
+
+    .secure-note {
+      font-size: 12px;
+      color: #9ca3af;
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+    .secure-note svg {
+      width: 12px; height: 12px;
+      stroke: #9ca3af;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .error-msg {
+      color: #ef4444;
+      font-size: 13px;
+      margin-top: 16px;
+      padding: 10px 14px;
+      background: #fef2f2;
+      border-radius: 8px;
+      border: 1px solid #fecaca;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      height: 1px;
+      background: #f3f4f6;
+      margin: 28px 0;
+    }
+
+    .social-proof {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+    .social-proof strong {
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="header-icon">🍊</div>
+    <div class="header-text">
+      <h1>SU Professor Finder</h1>
+      <p>Syracuse University · Course & Professor Intel</p>
     </div>
   </header>
 
-  <main class="flex-1 flex items-center justify-center px-4 py-16">
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 max-w-md w-full text-center">
+  <main>
+    <div class="card">
 
-      <div class="text-5xl mb-4">🍊</div>
-      <h2 class="text-2xl font-bold text-gray-900 mb-2">Unlock Lifetime Access</h2>
-      <p class="text-gray-500 mb-8">One-time $1.99 payment — yours forever, no subscription.</p>
+      <div class="price-badge">
+        <span class="dollar">$</span>
+        <span class="amount">1.99</span>
+        <span class="period">one-time</span>
+      </div>
 
-      <ul class="text-left space-y-3 mb-8">
-        <li class="flex items-start gap-3">
-          <span class="text-green-500 mt-0.5">✓</span>
-          <span class="text-sm text-gray-700">Search any professor at Syracuse University</span>
+      <h2>Unlock Lifetime Access</h2>
+      <p class="subtitle">Pay once, use forever. No subscription, no renewals.</p>
+
+      <ul class="features">
+        <li>
+          <div class="check">
+            <svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg>
+          </div>
+          <span>Search any professor at Syracuse University</span>
         </li>
-        <li class="flex items-start gap-3">
-          <span class="text-green-500 mt-0.5">✓</span>
-          <span class="text-sm text-gray-700">Find all professors teaching a specific course, ranked</span>
+        <li>
+          <div class="check">
+            <svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg>
+          </div>
+          <span>Find all professors teaching a specific course, ranked by student data</span>
         </li>
-        <li class="flex items-start gap-3">
-          <span class="text-green-500 mt-0.5">✓</span>
-          <span class="text-sm text-gray-700">Easy A detector, exam mentions, grade distribution</span>
+        <li>
+          <div class="check">
+            <svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg>
+          </div>
+          <span>Easy A detector, exam mentions &amp; grade distribution insights</span>
         </li>
-        <li class="flex items-start gap-3">
-          <span class="text-green-500 mt-0.5">✓</span>
-          <span class="text-sm text-gray-700">Real student reviews + Reddit mentions</span>
+        <li>
+          <div class="check">
+            <svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg>
+          </div>
+          <span>Real student reviews + Reddit mentions from r/Syracuse</span>
         </li>
-        <li class="flex items-start gap-3">
-          <span class="text-green-500 mt-0.5">✓</span>
-          <span class="text-sm text-gray-700">Unlimited searches, forever</span>
+        <li>
+          <div class="check">
+            <svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg>
+          </div>
+          <span>Unlimited searches, forever</span>
         </li>
       </ul>
 
-      <a href="/create-checkout"
-         class="block w-full bg-[#D44500] hover:bg-orange-700 text-white font-bold py-4 rounded-xl text-lg transition-colors">
+      <a href="/create-checkout" class="cta-btn">
         Pay $1.99 — Get Lifetime Access
       </a>
 
-      <p class="text-xs text-gray-400 mt-4">Secure payment via Stripe. No recurring charges.</p>
+      <p class="secure-note">
+        <svg viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="8" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>
+        Secure payment via Stripe · No recurring charges
+      </p>
 
-      {% if error %}
-      <p class="text-red-500 text-sm mt-4">{{ error }}</p>
-      {% endif %}
+      <div class="error-msg" id="errorMsg" style="display:none"></div>
+      <script>
+        const e = new URLSearchParams(location.search).get('error');
+        if (e) { const d = document.getElementById('errorMsg'); d.textContent = e; d.style.display = 'block'; }
+      </script>
+
+      <div class="divider"></div>
+
+      <p class="social-proof">Built for <strong>SU students</strong> who want to pick the right professor before registering.</p>
+
     </div>
   </main>
 
