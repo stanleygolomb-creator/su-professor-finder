@@ -18,6 +18,9 @@ def _warmup():
 
 threading.Thread(target=_warmup, daemon=True).start()
 
+# Auto-refresh all active school indexes every 6 hours in the background
+rmp.start_auto_refresh()
+
 
 # ── Owner bypass ──────────────────────────────────────────────────────────────
 
