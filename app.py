@@ -22,6 +22,19 @@ def _warmup():
 threading.Thread(target=_warmup, daemon=True).start()
 
 
+# ── Owner bypass (unprotected, secret) ───────────────────────────────────────
+
+BYPASS_KEY = os.environ.get("BYPASS_KEY", "")
+
+@app.route("/access/<key>")
+def bypass(key):
+    if not BYPASS_KEY or key != BYPASS_KEY:
+        return "", 404
+    resp = make_response(redirect("/"))
+    payment.issue_access_cookie(resp, "owner-bypass")
+    return resp
+
+
 # ── Payment routes (unprotected) ─────────────────────────────────────────────
 
 @app.route("/pay")
