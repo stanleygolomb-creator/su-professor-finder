@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Admin Dashboard — Professor Finder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:#0f172a;color:#e2e8f0;min-height:100vh;}
+    a{color:inherit;text-decoration:none;}
+
+    /* ── Top bar ── */
+    .topbar{background:#1e293b;border-bottom:1px solid #334155;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;}
+    .topbar h1{font-size:16px;font-weight:800;letter-spacing:-.3px;color:#f1f5f9;}
+    .topbar p{font-size:12px;color:#64748b;margin-top:1px;}
+    .logout-btn{background:#334155;border:none;color:#94a3b8;font-size:12px;font-weight:700;font-family:'Inter',sans-serif;padding:7px 14px;border-radius:8px;cursor:pointer;transition:background .12s;}
+    .logout-btn:hover{background:#475569;color:#f1f5f9;}
+
+    /* ── Layout ── */
+    .content{max-width:1100px;margin:0 auto;padding:28px 24px;}
+
+    /* ── Stat cards ── */
+    .stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:28px;}
+    .stat-card{background:#1e293b;border-radius:14px;padding:20px;border:1px solid #334155;}
+    .stat-card .v{font-size:32px;font-weight:900;letter-spacing:-1px;color:#f1f5f9;}
+    .stat-card .l{font-size:11px;color:#64748b;font-weight:600;margin-top:4px;text-transform:uppercase;letter-spacing:.06em;}
+    .stat-card .icon{font-size:24px;margin-bottom:8px;}
+
+    /* ── Table ── */
+    .section-title{font-size:14px;font-weight:800;color:#f1f5f9;margin-bottom:12px;letter-spacing:-.2px;}
+    .table-wrap{background:#1e293b;border-radius:14px;border:1px solid #334155;overflow:hidden;}
+    table{width:100%;border-collapse:collapse;}
+    thead tr{background:#0f172a;}
+    th{padding:11px 16px;text-align:left;font-size:10px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid #334155;}
+    td{padding:11px 16px;font-size:13px;border-bottom:1px solid #1e293b;color:#cbd5e1;}
+    tr:last-child td{border-bottom:none;}
+    tbody tr:hover{background:#273548;}
+    .badge{display:inline-block;padding:2px 9px;border-radius:999px;font-size:11px;font-weight:700;}
+    .badge-premium{background:#14532d;color:#4ade80;}
+    .badge-free{background:#1e293b;color:#64748b;border:1px solid #334155;}
+    .email-cell{font-weight:600;color:#e2e8f0;}
+
+    /* ── Search ── */
+    .table-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #334155;}
+    .search-input{background:#0f172a;border:1.5px solid #334155;border-radius:9px;padding:7px 12px;font-size:13px;font-family:'Inter',sans-serif;color:#e2e8f0;outline:none;width:220px;transition:border-color .12s;}
+    .search-input:focus{border-color:#6366f1;}
+    .search-input::placeholder{color:#475569;}
+    .count-label{font-size:12px;color:#64748b;}
+
+    /* ── Empty ── */
+    .empty{text-align:center;padding:40px;color:#475569;font-size:14px;}
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div>
+      <h1>🛡️ Admin Dashboard</h1>
+      <p>Professor Finder — Private Panel</p>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <a href="/" style="font-size:12px;color:#64748b;">← Site</a>
+      <a href="/admin/logout"><button class="logout-btn">Sign Out</button></a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    {% if stats.error %}
+    <div style="background:#450a0a;border:1px solid #7f1d1d;border-radius:12px;padding:16px;margin-bottom:24px;color:#fca5a5;">
+      Database error: {{ stats.error }}
+    </div>
+    {% endif %}
+
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat-card">
+        <div class="icon">👥</div>
+        <div class="v">{{ stats.total_users or 0 }}</div>
+        <div class="l">Total Users</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon">⭐</div>
+        <div class="v">{{ stats.premium_users or 0 }}</div>
+        <div class="l">Premium Users</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon">🔖</div>
+        <div class="v">{{ stats.total_bm or 0 }}</div>
+        <div class="l">Total Bookmarks</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon">📊</div>
+        <div class="v">{% if stats.total_users and stats.total_users > 0 %}{{ ((stats.premium_users / stats.total_users) * 100) | round(0) | int }}%{% else %}—{% endif %}</div>
+        <div class="l">Conversion Rate</div>
+      </div>
+    </div>
+
+    <!-- Users table -->
+    <p class="section-title">Users</p>
+    <div class="table-wrap">
+      <div class="table-header">
+        <input class="search-input" id="userSearch" type="text" placeholder="Filter by email…" oninput="filterTable(this.value)"/>
+        <span class="count-label" id="countLabel">{{ users|length }} users</span>
+      </div>
+      {% if users %}
+      <table id="userTable">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Email</th>
+            <th>Plan</th>
+            <th>Signed Up</th>
+            <th>Stripe Session</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for u in users %}
+          <tr data-email="{{ u.email | lower }}">
+            <td style="color:#475569;">{{ u.id }}</td>
+            <td class="email-cell">{{ u.email }}</td>
+            <td>
+              {% if u.premium %}
+              <span class="badge badge-premium">⭐ Premium</span>
+              {% else %}
+              <span class="badge badge-free">Free</span>
+              {% endif %}
+            </td>
+            <td>{{ u.created_at[:16] if u.created_at else "—" }}</td>
+            <td style="font-size:11px;color:#475569;font-family:monospace;">{{ u.stripe_session[:24] ~ "…" if u.stripe_session else "—" }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty">No users yet.</div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  <script>
+    function filterTable(q) {
+      q = q.toLowerCase();
+      const rows = document.querySelectorAll("#userTable tbody tr");
+      let visible = 0;
+      rows.forEach(r => {
+        const match = !q || r.dataset.email.includes(q);
+        r.style.display = match ? "" : "none";
+        if (match) visible++;
+      });
+      document.getElementById("countLabel").textContent = `${visible} user${visible !== 1 ? "s" : ""}`;
+    }
+  </script>
+</body>
+</html>

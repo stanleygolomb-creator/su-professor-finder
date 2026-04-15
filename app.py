@@ -1,14 +1,34 @@
-from flask import Flask, request, jsonify, render_template, redirect, make_response
+from flask import Flask, request, jsonify, render_template, redirect, make_response, session
 from flask_cors import CORS
 import threading
 import os
+import bcrypt
 import rmp
 import reddit_scraper
 import payment
 import auth
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("FLASK_SECRET", os.urandom(24))
 CORS(app)
+
+ADMIN_USER      = os.environ.get("ADMIN_USER", "")
+ADMIN_PASS_HASH = os.environ.get("ADMIN_PASS_HASH", "")
+
+
+def _admin_ok():
+    return session.get("admin") is True
+
+
+def _check_admin_creds(username: str, password: str) -> bool:
+    if not ADMIN_USER or not ADMIN_PASS_HASH:
+        return False
+    if username != ADMIN_USER:
+        return False
+    try:
+        return bcrypt.checkpw(password.encode(), ADMIN_PASS_HASH.encode())
+    except Exception:
+        return False
 
 # Init database on startup
 auth.init_db()
@@ -273,6 +293,47 @@ def professor_detail(professor_id):
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+# ── Admin routes ──────────────────────────────────────────────────────────────
+
+@app.route("/admin/login", methods=["GET", "POST"])
+def admin_login():
+    error = ""
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        if _check_admin_creds(username, password):
+            session["admin"] = True
+            return redirect("/admin")
+        error = "Invalid credentials."
+    return render_template("admin_login.html", error=error)
+
+
+@app.route("/admin/logout")
+def admin_logout():
+    session.pop("admin", None)
+    return redirect("/admin/login")
+
+
+@app.route("/admin")
+def admin_dashboard():
+    if not _admin_ok():
+        return redirect("/admin/login")
+    import sqlite3
+    stats = {}
+    try:
+        with auth._db() as c:
+            stats["total_users"]   = c.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+            stats["premium_users"] = c.execute("SELECT COUNT(*) FROM users WHERE premium=1").fetchone()[0]
+            stats["total_bm"]      = c.execute("SELECT COUNT(*) FROM bookmarks").fetchone()[0]
+            users = [dict(r) for r in c.execute(
+                "SELECT id, email, premium, created_at, stripe_session FROM users ORDER BY created_at DESC LIMIT 200"
+            ).fetchall()]
+    except Exception as e:
+        stats = {"error": str(e)}
+        users = []
+    return render_template("admin.html", stats=stats, users=users)
 
 
 if __name__ == "__main__":

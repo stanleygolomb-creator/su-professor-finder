@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Admin Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:#0f172a;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+    .box{background:#1e293b;border-radius:20px;padding:40px 36px;max-width:380px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.5);}
+    .logo{text-align:center;margin-bottom:28px;}
+    .logo span{font-size:36px;}
+    .logo h1{color:#f1f5f9;font-size:20px;font-weight:800;margin-top:8px;letter-spacing:-.5px;}
+    .logo p{color:#64748b;font-size:12px;margin-top:4px;}
+    .field{margin-bottom:14px;}
+    .field label{display:block;font-size:11px;font-weight:700;color:#94a3b8;margin-bottom:5px;letter-spacing:.06em;text-transform:uppercase;}
+    .field input{width:100%;background:#0f172a;border:1.5px solid #334155;border-radius:11px;padding:11px 14px;font-size:14px;font-family:'Inter',sans-serif;color:#f1f5f9;outline:none;transition:border-color .15s;}
+    .field input:focus{border-color:#6366f1;}
+    .btn{width:100%;padding:13px;border-radius:12px;border:none;cursor:pointer;background:linear-gradient(135deg,#6366f1,#4f46e5);color:#fff;font-size:15px;font-weight:800;font-family:'Inter',sans-serif;margin-top:6px;transition:opacity .15s;}
+    .btn:hover{opacity:.88;}
+    .err{background:#450a0a;border:1px solid #7f1d1d;border-radius:10px;padding:10px 14px;color:#fca5a5;font-size:13px;margin-bottom:16px;}
+    .back{text-align:center;margin-top:18px;}<br>
+    .back a{color:#475569;font-size:12px;text-decoration:none;}
+    .back a:hover{color:#94a3b8;}
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="logo">
+      <span>🛡️</span>
+      <h1>Admin Panel</h1>
+      <p>Professor Finder</p>
+    </div>
+    {% if error %}
+    <div class="err">{{ error }}</div>
+    {% endif %}
+    <form method="POST">
+      <div class="field">
+        <label>Username</label>
+        <input type="text" name="username" autocomplete="username" autofocus required/>
+      </div>
+      <div class="field">
+        <label>Password</label>
+        <input type="password" name="password" autocomplete="current-password" required/>
+      </div>
+      <button class="btn" type="submit">Sign In</button>
+    </form>
+    <div class="back"><a href="/">← Back to site</a></div>
+  </div>
+</body>
+</html>
