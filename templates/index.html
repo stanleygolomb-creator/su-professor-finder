@@ -157,10 +157,77 @@
     .fade-in { animation: fi .22s ease; }
     @keyframes fi { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
     .hidden { display: none !important; }
+
+    /* ── Auth modal ── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.55); backdrop-filter: blur(4px);
+      z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-box {
+      background: #fff; border-radius: 22px; padding: 32px 28px; max-width: 400px; width: 100%;
+      box-shadow: 0 24px 64px rgba(0,0,0,.22); position: relative;
+    }
+    .modal-close {
+      position: absolute; top: 14px; right: 16px; background: #f3f4f6; border: none;
+      border-radius: 50%; width: 28px; height: 28px; cursor: pointer; font-size: 14px;
+      display: flex; align-items: center; justify-content: center; color: #6b7280;
+    }
+    .modal-close:hover { background: #e5e7eb; }
+    .modal-tabs { display: flex; background: #F5F0EB; border-radius: 12px; padding: 3px; gap: 3px; margin-bottom: 22px; }
+    .modal-tab { flex: 1; padding: 8px; font-size: 13px; font-weight: 700; border-radius: 10px; border: none; cursor: pointer; font-family: 'Inter',sans-serif; background: transparent; color: #9ca3af; transition: all .15s; }
+    .modal-tab.on { background: #fff; color: var(--p1); box-shadow: 0 1px 4px rgba(0,0,0,.1); }
+    .modal-title { font-size: 20px; font-weight: 900; letter-spacing: -.5px; margin-bottom: 6px; }
+    .modal-sub   { font-size: 13px; color: #9ca3af; margin-bottom: 22px; }
+    .field-group { margin-bottom: 14px; }
+    .field-group label { display: block; font-size: 11px; font-weight: 700; color: #6b7280; margin-bottom: 5px; letter-spacing: .04em; text-transform: uppercase; }
+    .field-group input {
+      width: 100%; border: 2px solid #F0EBE5; border-radius: 12px; padding: 11px 14px;
+      font-size: 14px; font-family: 'Inter',sans-serif; outline: none; transition: border-color .15s;
+    }
+    .field-group input:focus { border-color: var(--p1); }
+    .auth-btn {
+      width: 100%; padding: 14px; border-radius: 13px; border: none; cursor: pointer;
+      background: linear-gradient(135deg, var(--p2), var(--p1)); color: #fff;
+      font-size: 15px; font-weight: 800; font-family: 'Inter',sans-serif;
+      margin-top: 6px; transition: opacity .15s;
+    }
+    .auth-btn:hover { opacity: .9; }
+    .auth-error { background: #FEF2F2; border: 1px solid #FECACA; border-radius: 10px; padding: 10px 14px; color: #ef4444; font-size: 13px; margin-bottom: 14px; display: none; }
+
+    /* ── Bookmark btn ── */
+    .bm-btn {
+      background: none; border: none; cursor: pointer; padding: 5px; border-radius: 8px;
+      color: #d1d5db; transition: color .15s, transform .1s; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .bm-btn:hover { color: #f87171; transform: scale(1.15); }
+    .bm-btn.saved { color: #f87171; }
+
+    /* ── Saved panel ── */
+    .saved-empty { text-align: center; padding: 32px 16px; color: #b8b0a6; }
+    .saved-empty .empty-icon { font-size: 40px; margin-bottom: 10px; }
+    .saved-item { display: flex; align-items: center; gap: 12px; padding: 13px 14px; background: #fff; border-radius: 14px; box-shadow: 0 1px 3px rgba(0,0,0,.06); cursor: pointer; transition: transform .12s; }
+    .saved-item:hover { transform: translateY(-1px); }
+
+    /* ── User menu ── */
+    .user-menu-wrap { position: relative; }
+    .user-menu {
+      position: absolute; top: calc(100% + 8px); right: 0; background: #fff;
+      border-radius: 14px; box-shadow: 0 8px 32px rgba(0,0,0,.14); padding: 8px;
+      min-width: 200px; z-index: 100; display: none;
+    }
+    .user-menu.open { display: block; }
+    .user-menu-item { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 9px; font-size: 13px; font-weight: 600; cursor: pointer; color: #374151; transition: background .12s; }
+    .user-menu-item:hover { background: #F5F0EB; }
+    .user-menu-item.danger { color: #ef4444; }
+    .user-menu-item.danger:hover { background: #FEF2F2; }
   </style>
 </head>
 <body>
-  <script>const IS_PREMIUM = {{ premium | tojson }};</script>
+  <script>
+    const IS_PREMIUM = {{ premium | tojson }};
+    const INIT_USER  = {{ (user or {}) | tojson }};
+  </script>
 
   <!-- ── HERO ── -->
   <div class="hero" id="hero">
@@ -196,18 +263,15 @@
     <!-- Search card -->
     <div class="search-card">
       <div class="tab-strip">
-        <button class="tab-btn on" id="tabProfessor" onclick="setTab('professor')">👤 Professor</button>
-        <button class="tab-btn"    id="tabCourse"    onclick="setTab('course')">
-          📚 Course<span class="pro-chip" id="proChip">PRO</span>
+        <button class="tab-btn on" id="tabProfessor" onclick="setTab('professor')">
+          👤 Professor<span class="pro-chip" id="proChip">PRO</span>
         </button>
+        <button class="tab-btn"    id="tabCourse"    onclick="setTab('course')">📚 Course</button>
         <button class="tab-btn"    id="tabCollege"   onclick="setTab('college')">🎓 College</button>
+        <button class="tab-btn"    id="tabSaved"     onclick="setTab('saved')">🔖 Saved</button>
       </div>
       <div id="panelProfessor">
-        <div class="search-row">
-          <input id="searchInput" type="text" placeholder="Search by last name…" onkeydown="if(event.key==='Enter')doSearch()"/>
-          <button class="search-btn" onclick="doSearch()">Search</button>
-        </div>
-        <p class="hint">Free · <span id="searchSchoolHint">Syracuse University</span></p>
+        <div id="profSearchArea"></div>
       </div>
       <div id="panelCourse" class="hidden"><div id="courseArea"></div></div>
       <div id="panelCollege" class="hidden">
@@ -217,6 +281,48 @@
           </div>
           <div class="school-grid" id="schoolGrid"></div>
         </div>
+      </div>
+      <div id="panelSaved" class="hidden">
+        <div id="savedList" style="padding:2px 2px 4px;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── AUTH MODAL ── -->
+  <div class="modal-overlay hidden" id="authModal" onclick="if(event.target===this)closeAuth()">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeAuth()">✕</button>
+      <div class="modal-tabs" id="authModalTabs">
+        <button class="modal-tab on" id="tabLogin"   onclick="switchAuthTab('login')">Sign In</button>
+        <button class="modal-tab"    id="tabSignup"  onclick="switchAuthTab('signup')">Create Account</button>
+        <button class="modal-tab hidden" id="tabAccount" onclick="switchAuthTab('account')">Account</button>
+      </div>
+
+      <!-- Sign In -->
+      <div id="authLogin">
+        <p class="modal-title">Welcome back</p>
+        <p class="modal-sub">Sign in to access your saved professors.</p>
+        <div id="loginError" class="auth-error"></div>
+        <div class="field-group"><label>Email</label><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email"/></div>
+        <div class="field-group"><label>Password</label><input id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+        <button class="auth-btn" onclick="doLogin()">Sign In</button>
+      </div>
+
+      <!-- Sign Up -->
+      <div id="authSignup" class="hidden">
+        <p class="modal-title">Create account</p>
+        <p class="modal-sub">Save professors and keep your premium subscription.</p>
+        <div id="signupError" class="auth-error"></div>
+        <div class="field-group"><label>Email</label><input id="signupEmail" type="email" placeholder="you@example.com" autocomplete="email"/></div>
+        <div class="field-group"><label>Password</label><input id="signupPassword" type="password" placeholder="Min 6 characters" autocomplete="new-password" onkeydown="if(event.key==='Enter')doSignup()"/></div>
+        <button class="auth-btn" onclick="doSignup()">Create Account</button>
+        <p style="font-size:11px;color:#b8b0a6;text-align:center;margin-top:14px;line-height:1.6;">By creating an account you agree to our terms. Your email is private and never shared or sold.</p>
+      </div>
+
+      <!-- Account Panel -->
+      <div id="authAccount" class="hidden">
+        <p class="modal-title">My Account</p>
+        <div id="accountContent"></div>
       </div>
     </div>
   </div>
@@ -350,16 +456,46 @@ let SCHOOL = JSON.parse(localStorage.getItem("pf_school") || "null")
           || COLLEGES.find(c=>c.name==="Syracuse University");
 let filteredColleges = [...COLLEGES];
 let activeTab = "professor";
+let currentUser = (INIT_USER && INIT_USER.uid) ? INIT_USER : null;
+let bookmarkSet = new Set(); // ref_ids the user has bookmarked
 
 // ── Init ───────────────────────────────────────────────────────────────────
 (function init() {
-  document.getElementById("headerRight").innerHTML = IS_PREMIUM
-    ? `<span class="tier-btn tier-premium">⭐ Premium</span>`
-    : `<a href="/pay" class="tier-btn tier-free">Upgrade $1.99 →</a>`;
+  renderHeader();
   if (IS_PREMIUM) { const c=document.getElementById("proChip"); if(c) c.style.display="none"; }
   applyTheme(SCHOOL);
   renderSchoolGrid(COLLEGES);
+  if (currentUser) loadBookmarkSet();
+  // Resolve school ID if loaded from localStorage without one
+  if (!SCHOOL.id) resolveSchoolId(SCHOOL);
 })();
+
+function renderHeader() {
+  const hr = document.getElementById("headerRight");
+  if (currentUser) {
+    const email = currentUser.email || "";
+    const initial = email[0]?.toUpperCase() || "?";
+    hr.innerHTML = `
+      <div class="user-menu-wrap">
+        <button onclick="toggleUserMenu()" style="display:flex;align-items:center;gap:7px;background:rgba(255,255,255,0.18);border:1.5px solid rgba(255,255,255,0.3);border-radius:999px;padding:6px 12px 6px 8px;cursor:pointer;color:var(--ptxt);font-family:'Inter',sans-serif;">
+          <span style="width:22px;height:22px;border-radius:50%;background:rgba(255,255,255,0.3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;">${initial}</span>
+          <span style="font-size:12px;font-weight:700;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${esc(email.split("@")[0])}</span>
+          ${IS_PREMIUM ? `<span style="font-size:10px;opacity:.8;">⭐</span>` : ""}
+        </button>
+        <div class="user-menu" id="userMenu">
+          <div class="user-menu-item" style="font-size:11px;color:#9ca3af;cursor:default;">${esc(email)}</div>
+          ${!IS_PREMIUM ? `<div class="user-menu-item" onclick="location.href='/pay'">⭐ Upgrade to Premium</div>` : `<div class="user-menu-item" style="color:#16a34a;cursor:default;">⭐ Premium Active</div>`}
+          <div class="user-menu-item" onclick="setTab('saved');toggleUserMenu()">🔖 Saved Professors</div>
+          <div class="user-menu-item" onclick="openAuth('account');toggleUserMenu()">⚙️ Account & Privacy</div>
+          <div class="user-menu-item danger" onclick="doLogout()">Sign Out</div>
+        </div>
+      </div>`;
+  } else {
+    hr.innerHTML = IS_PREMIUM
+      ? `<span class="tier-btn tier-premium">⭐ Premium</span>`
+      : `<button onclick="openAuth('login')" class="tier-btn tier-free" style="cursor:pointer;border:none;">Sign In</button>`;
+  }
+}
 
 // ── Theme application ─────────────────────────────────────────────────────
 function applyTheme(school) {
@@ -376,17 +512,42 @@ function applyTheme(school) {
   document.getElementById("badgeLoc").textContent  = `${s.city||""}, ${s.state||""}`;
   document.getElementById("headerEmoji").textContent = s.emoji || "🎓";
   document.getElementById("headerSchool").textContent = s.name;
-  document.getElementById("searchSchoolHint").textContent = s.name;
   document.title = `${s.abbr||s.name} Professor Finder`;
 
   // School-colored border on selected school button
   renderSchoolGrid(filteredColleges);
+  renderProfPanel();
+}
+
+function renderProfPanel() {
+  const el = document.getElementById("profSearchArea");
+  if (!el) return;
+  if (!IS_PREMIUM) {
+    el.innerHTML = `<div style="padding:4px 4px 8px;">
+      <div class="lock-card">
+        <div class="lock-row">
+          <div class="lock-ico">🔒</div>
+          <div>
+            <p class="lock-title">Professor Search — Premium</p>
+            <p class="lock-sub">Search any professor by name at ${esc(SCHOOL.name)}. Get all reviews, Easy A scores, Reddit mentions &amp; more.</p>
+          </div>
+        </div>
+        <a href="/pay" style="display:block;text-align:center;margin-top:14px;background:linear-gradient(135deg,var(--p2),var(--p1));color:#fff;font-weight:800;font-size:14px;padding:13px;border-radius:12px;text-decoration:none;">Unlock Premium — $1.99</a>
+      </div>
+    </div>`;
+    return;
+  }
+  el.innerHTML = `<div class="search-row">
+    <input id="searchInput" type="text" placeholder="Search by last name…" onkeydown="if(event.key==='Enter')doSearch()"/>
+    <button class="search-btn" onclick="doSearch()">Search</button>
+  </div>
+  <p class="hint">⭐ Premium · <span id="searchSchoolHint">${esc(SCHOOL.name)}</span></p>`;
 }
 
 // ── Tab switching ─────────────────────────────────────────────────────────
 function setTab(tab) {
   activeTab = tab;
-  ["professor","course","college"].forEach(t => {
+  ["professor","course","college","saved"].forEach(t => {
     document.getElementById("panel"+cap(t)).classList.toggle("hidden", t!==tab);
     document.getElementById("tab"+cap(t)).className = "tab-btn" + (t===tab?" on":"");
   });
@@ -394,6 +555,7 @@ function setTab(tab) {
   document.getElementById("searchResults").classList.add("hidden");
   clearDetail();
   if (tab==="course")  renderCourseArea();
+  if (tab==="saved")   renderSaved();
 }
 function cap(s) { return s[0].toUpperCase()+s.slice(1); }
 
@@ -428,19 +590,25 @@ function selectSchool(jsonStr) {
   SCHOOL = {...c, id: null};
   applyTheme(SCHOOL);
   localStorage.setItem("pf_school", JSON.stringify(SCHOOL));
-  // Resolve RMP ID in background
-  fetch(`/api/schools?q=${encodeURIComponent(c.name)}`)
-    .then(r=>r.json())
-    .then(data=>{
-      if (data.results?.length) {
-        const match = data.results.find(s=>s.state===c.state)||data.results[0];
-        SCHOOL.id = match.id;
-        SCHOOL.name = match.name||c.name;
-        localStorage.setItem("pf_school", JSON.stringify(SCHOOL));
-      }
-    }).catch(()=>{});
+  resolveSchoolId(c);
   setTab("professor");
-  setTimeout(()=>document.getElementById("searchInput").focus(), 100);
+}
+
+async function resolveSchoolId(c) {
+  try {
+    const res  = await fetch(`/api/schools?q=${encodeURIComponent(c.name)}`);
+    const data = await res.json();
+    if (data.results?.length) {
+      // Try to match by state and partial name first, fall back to first result
+      const match = data.results.find(s=>
+        s.state === c.state && s.name.toLowerCase().includes(c.abbr?.toLowerCase()||c.name.toLowerCase().split(" ")[0])
+      ) || data.results.find(s => s.state === c.state)
+        || data.results[0];
+      SCHOOL.id   = match.id;
+      SCHOOL.name = match.name || c.name;
+      localStorage.setItem("pf_school", JSON.stringify(SCHOOL));
+    }
+  } catch(_) {}
 }
 
 let _schoolTimer = null;
@@ -471,11 +639,7 @@ function onSchoolSearch(val) {
 // ── Course panel ──────────────────────────────────────────────────────────
 function renderCourseArea() {
   const el = document.getElementById("courseArea");
-  if (!IS_PREMIUM) {
-    el.innerHTML = `<div style="padding:4px 4px 8px;"><div class="lock-card"><div class="lock-row"><div class="lock-ico">🔒</div><div><p class="lock-title">Course Search — Premium Only</p><p class="lock-sub">Find every professor teaching a course at ${esc(SCHOOL.name)}, ranked by student data. One-time $1.99.</p></div></div><a href="/pay" style="display:block;text-align:center;margin-top:14px;background:linear-gradient(135deg,var(--p2),var(--p1));color:#fff;font-weight:800;font-size:14px;padding:13px;border-radius:12px;text-decoration:none;">Unlock Premium — $1.99</a></div></div>`;
-    return;
-  }
-  el.innerHTML = `<div class="search-row"><input id="courseInput" type="text" placeholder="Course code or name — e.g. MAT 295, Chemistry…" onkeydown="if(event.key==='Enter')doCourseSearch()"/><button class="search-btn" onclick="doCourseSearch()">Find Profs</button></div><p class="hint">Ranked by rating · ease · retake rate at ${esc(SCHOOL.name)}</p>`;
+  el.innerHTML = `<div class="search-row"><input id="courseInput" type="text" placeholder="Course code or name — e.g. MAT 295, Chemistry…" onkeydown="if(event.key==='Enter')doCourseSearch()"/><button class="search-btn" onclick="doCourseSearch()">Find Profs</button></div><p class="hint">Free · ${esc(SCHOOL.name)} ${IS_PREMIUM ? "· <span style='color:var(--p1);'>⭐ Easy A badges unlocked</span>" : "· <a href='/pay' style='color:var(--p1);font-weight:700;'>Upgrade for Easy A &amp; full details</a>"}</p>`;
 }
 
 // ── Course search ─────────────────────────────────────────────────────────
@@ -483,10 +647,16 @@ async function doCourseSearch() {
   const course = document.getElementById("courseInput").value.trim();
   if (!course) return;
   clearDetail();
-  const sid = SCHOOL.id||"";
+  // Make sure school ID is resolved before searching
+  if (!SCHOOL.id) {
+    showLoader("searchResults", "Resolving school data…");
+    await resolveSchoolId(SCHOOL);
+    if (!SCHOOL.id) { showError(`Could not find ${esc(SCHOOL.name)} on Rate My Professors.`); return; }
+  }
+  const sid = SCHOOL.id;
   let cached = false;
   try { cached=(await(await fetch(`/api/index-status?school_id=${encodeURIComponent(sid)}`)).json()).cached; } catch(_){}
-  showLoader("searchResults", cached?`Searching for "${course}"…`:"Building professor index — hold tight (~10 sec)…");
+  showLoader("searchResults", cached ? `Searching for "${esc(course)}"…` : `Building professor index for ${esc(SCHOOL.name)} — hold tight (~15 sec)…`);
   try {
     const res=await fetch(`/api/course?course=${encodeURIComponent(course)}&school_id=${encodeURIComponent(sid)}`);
     const data=await res.json();
@@ -508,24 +678,43 @@ function courseCard(p,i) {
   const wtag=p.wouldTakeAgainPercent>=0?Math.round(p.wouldTakeAgainPercent)+"%":"N/A";
   const score=p.rankScore??0;
   const bg=rGrad(p.avgRating);
-  const isEasy=p.avgDifficulty!=null&&p.avgDifficulty<=2.5&&(p.wouldTakeAgainPercent<0||p.wouldTakeAgainPercent>=60);
+  // Easy A badge — premium only
+  const isEasy=IS_PREMIUM&&p.avgDifficulty!=null&&p.avgDifficulty<=2.5&&(p.wouldTakeAgainPercent<0||p.wouldTakeAgainPercent>=60);
+  const easyABadge = IS_PREMIUM
+    ? (isEasy ? `<span class="tag" style="background:#DCFCE7;color:#16a34a;">✓ Easy A</span>` : "")
+    : `<span class="tag" style="background:#F5F0EB;color:#b8a89a;cursor:pointer;" onclick="event.stopPropagation();location.href='/pay'" title="Upgrade to see Easy A score">🔒 Easy A</span>`;
   const medals=["🥇","🥈","🥉"];
   const rank=i<3?`<span style="font-size:22px;flex-shrink:0;">${medals[i]}</span>`:`<span style="font-weight:800;color:#d1d5db;font-size:12px;min-width:22px;text-align:center;flex-shrink:0;">#${i+1}</span>`;
   const bc=score>=60?"#22c55e":score>=40?"#f59e0b":"#f87171";
   const dc=diff<=2?"#16a34a":diff<=3.5?"#d97706":"#dc2626";
-  return `<div class="card card-hover fade-in" onclick="loadProfessor('${p.id}','${esc(p.firstName)} ${esc(p.lastName)}')"><div style="padding:15px 17px;display:flex;align-items:center;gap:11px;">${rank}<div class="blob-r" style="background:${bg};">${rating}</div><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;"><span style="font-weight:800;font-size:15px;">${esc(p.firstName)} ${esc(p.lastName)}</span>${isEasy?`<span class="tag" style="background:#DCFCE7;color:#16a34a;">✓ Easy A</span>`:""}</div><p style="font-size:11px;color:#b8b0a6;margin-top:1px;">${esc(p.department||"")}</p><div class="tags"><span class="tag" style="background:#FEF3C7;color:#b45309;">⭐ ${rating}/5</span><span class="tag" style="background:#F5F5F4;color:${dc};">🔥 ${diff}/5</span><span class="tag" style="background:#F5F5F4;color:#6b7280;">🔁 ${wtag}</span><span class="tag" style="background:#F5F5F4;color:#9ca3af;">${p.numRatings} reviews</span></div><div class="score-bar"><div class="score-fill" style="width:${score}%;background:${bc};"></div></div><div style="display:flex;justify-content:space-between;margin-top:2px;"><span style="font-size:10px;color:#d1c8be;">Score</span><span style="font-size:10px;font-weight:700;color:#9ca3af;">${score}/100</span></div></div><svg width="13" height="13" fill="none" stroke="#d1d5db" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>`;
+  // Clicking through to full detail — premium only
+  const clickAction = IS_PREMIUM
+    ? `onclick="loadProfessor('${p.id}','${esc(p.firstName)} ${esc(p.lastName)}')"`
+    : `onclick="showDetailLock()"`;
+  const chevron = IS_PREMIUM
+    ? `<svg width="13" height="13" fill="none" stroke="#d1d5db" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>`
+    : `<span style="font-size:12px;color:#d1d5db;">🔒</span>`;
+  return `<div class="card card-hover fade-in" ${clickAction}><div style="padding:15px 17px;display:flex;align-items:center;gap:11px;">${rank}<div class="blob-r" style="background:${bg};">${rating}</div><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;"><span style="font-weight:800;font-size:15px;">${esc(p.firstName)} ${esc(p.lastName)}</span>${easyABadge}</div><p style="font-size:11px;color:#b8b0a6;margin-top:1px;">${esc(p.department||"")}</p><div class="tags"><span class="tag" style="background:#FEF3C7;color:#b45309;">⭐ ${rating}/5</span><span class="tag" style="background:#F5F5F4;color:${dc};">🔥 ${diff}/5</span><span class="tag" style="background:#F5F5F4;color:#6b7280;">🔁 ${wtag}</span><span class="tag" style="background:#F5F5F4;color:#9ca3af;">${p.numRatings} reviews</span></div><div class="score-bar"><div class="score-fill" style="width:${score}%;background:${bc};"></div></div><div style="display:flex;justify-content:space-between;margin-top:2px;"><span style="font-size:10px;color:#d1c8be;">Score</span><span style="font-size:10px;font-weight:700;color:#9ca3af;">${score}/100</span></div></div>${chevron}</div></div>`;
 }
 
 // ── Professor search ──────────────────────────────────────────────────────
 async function doSearch() {
-  const name=document.getElementById("searchInput").value.trim();
+  const inp = document.getElementById("searchInput");
+  if (!inp) return;
+  const name = inp.value.trim();
   if(!name)return;
   clearDetail();
+  if (!SCHOOL.id) {
+    showLoader("searchResults","Resolving school data…");
+    await resolveSchoolId(SCHOOL);
+    if (!SCHOOL.id) { showError(`Could not find ${esc(SCHOOL.name)} on Rate My Professors.`); return; }
+  }
   showLoader("searchResults","Searching Rate My Professors…");
-  const sid=SCHOOL.id||"";
+  const sid=SCHOOL.id;
   try {
     const res=await fetch(`/api/search?name=${encodeURIComponent(name)}&school_id=${encodeURIComponent(sid)}`);
     const data=await res.json();
+    if(data.error==="premium_required"){showError('🔒 Professor search requires <a href="/pay" style="color:var(--p1);font-weight:700;">Premium — $1.99</a>');return;}
     if(data.error){showError(data.error);return;}
     renderProfList(data.results);
   } catch(e){showError("Network error.");}
@@ -544,7 +733,8 @@ function profCard(p) {
   const wtag=p.wouldTakeAgainPercent>=0?Math.round(p.wouldTakeAgainPercent)+"%":"N/A";
   const bg=rGrad(p.avgRating);
   const dc=diff<=2?"#16a34a":diff<=3.5?"#d97706":"#dc2626";
-  return `<div class="card card-hover fade-in" onclick="loadProfessor('${p.id}','${esc(p.firstName)} ${esc(p.lastName)}')"><div style="padding:14px 16px;display:flex;align-items:center;gap:13px;"><div class="blob-r" style="background:${bg};">${rating}</div><div style="flex:1;min-width:0;"><p style="font-weight:800;font-size:15px;">${esc(p.firstName)} ${esc(p.lastName)}</p><p style="font-size:11px;color:#b8b0a6;margin-top:2px;">${esc(p.department||"")}</p><div class="tags"><span class="tag" style="background:#FEF3C7;color:#b45309;">⭐ ${rating}/5</span><span class="tag" style="background:#F5F5F4;color:${dc};">Difficulty ${diff}/5</span><span class="tag" style="background:#F5F5F4;color:#6b7280;">🔁 ${wtag}</span><span class="tag" style="background:#F5F5F4;color:#9ca3af;">${p.numRatings} reviews</span></div></div><svg width="13" height="13" fill="none" stroke="#d1d5db" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div>`;
+  const name=`${p.firstName} ${p.lastName}`;
+  return `<div class="card fade-in" style="display:flex;align-items:center;"><div class="card-hover" style="flex:1;min-width:0;" onclick="loadProfessor('${p.id}','${esc(name)}')"><div style="padding:14px 16px;display:flex;align-items:center;gap:13px;"><div class="blob-r" style="background:${bg};">${rating}</div><div style="flex:1;min-width:0;"><p style="font-weight:800;font-size:15px;">${esc(name)}</p><p style="font-size:11px;color:#b8b0a6;margin-top:2px;">${esc(p.department||"")}</p><div class="tags"><span class="tag" style="background:#FEF3C7;color:#b45309;">⭐ ${rating}/5</span><span class="tag" style="background:#F5F5F4;color:${dc};">Difficulty ${diff}/5</span><span class="tag" style="background:#F5F5F4;color:#6b7280;">🔁 ${wtag}</span><span class="tag" style="background:#F5F5F4;color:#9ca3af;">${p.numRatings} reviews</span></div></div><svg width="13" height="13" fill="none" stroke="#d1d5db" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div><div style="padding:0 14px 0 0;">${bmHtml(p.id, name, p.department, p.avgRating)}</div></div>`;
 }
 
 // ── Professor detail ──────────────────────────────────────────────────────
@@ -602,7 +792,215 @@ function renderProfDetail(data) {
       :`<div class="card" style="padding:20px;margin-top:10px;"><p style="font-weight:800;font-size:14px;display:flex;align-items:center;gap:7px;">${rl} Reddit Mentions</p><p style="font-size:13px;color:#b8b0a6;margin-top:6px;">No Reddit posts found.</p></div>`)
     :`<div class="card" style="padding:20px;margin-top:10px;"><div class="lock-row"><div class="lock-ico">${rl}</div><div><p class="lock-title">Reddit Mentions</p><p class="lock-sub">What students are saying on Reddit.</p></div><a href="/pay" class="unlock-btn">Unlock $1.99</a></div></div>`;
 
-  document.getElementById("profDetail").innerHTML=`<div style="display:flex;flex-direction:column;gap:10px;" class="fade-in"><div class="card" style="padding:22px;"><div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;"><div style="width:70px;height:70px;border-radius:18px;background:${bg};display:flex;align-items:center;justify-content:center;font-weight:900;font-size:21px;color:#fff;flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,.12);">${p.avgRating!=null?p.avgRating.toFixed(1):"?"}</div><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;"><h2 style="font-size:20px;font-weight:900;letter-spacing:-.5px;">${esc(p.name)}</h2><a href="${esc(p.rmpUrl)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;background:color-mix(in srgb, var(--p1) 8%, white);color:var(--p1);border:1px solid color-mix(in srgb, var(--p1) 25%, white);border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700;text-decoration:none;">RMP ↗</a></div><p style="font-size:12px;color:#b8b0a6;">${esc(p.department||"")}</p><div class="stat-grid"><div class="stat-chip"><div class="v" style="color:${p.avgRating>=4?"#16a34a":p.avgRating>=3?"#d97706":"#dc2626"};">${p.avgRating!=null?p.avgRating.toFixed(1):"—"}</div><div class="l">Rating</div></div><div class="stat-chip"><div class="v" style="color:${dc};">${p.avgDifficulty!=null?p.avgDifficulty.toFixed(1):"—"}</div><div class="l">Difficulty</div></div><div class="stat-chip"><div class="v">${wtag!=null?wtag+"%":"—"}</div><div class="l">Retake</div></div><div class="stat-chip"><div class="v">${p.numRatings??0}</div><div class="l">Reviews</div></div></div></div></div>${easyAHtml}${gradeDist}${courses}</div>${examHtml}<div class="card" style="padding:20px;"><p style="font-weight:800;font-size:14px;margin-bottom:12px;">💬 Student Reviews <span class="tag" style="background:#F5F5F4;color:#6b7280;margin-left:5px;">${isPremium?ratings.length+" total":"3 of "+ratings.length+" free"}</span></p>${reviewsHtml}${moreReviews}</div>${redditHtml}</div>`;
+  document.getElementById("profDetail").innerHTML=`<div style="display:flex;flex-direction:column;gap:10px;" class="fade-in"><div class="card" style="padding:22px;"><div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;"><div style="width:70px;height:70px;border-radius:18px;background:${bg};display:flex;align-items:center;justify-content:center;font-weight:900;font-size:21px;color:#fff;flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,.12);">${p.avgRating!=null?p.avgRating.toFixed(1):"?"}</div><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;"><h2 style="font-size:20px;font-weight:900;letter-spacing:-.5px;">${esc(p.name)}</h2><a href="${esc(p.rmpUrl)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;background:color-mix(in srgb, var(--p1) 8%, white);color:var(--p1);border:1px solid color-mix(in srgb, var(--p1) 25%, white);border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700;text-decoration:none;">RMP ↗</a>${bmHtml(p.id, p.name, p.department, p.avgRating)}</div><p style="font-size:12px;color:#b8b0a6;">${esc(p.department||"")}</p><div class="stat-grid"><div class="stat-chip"><div class="v" style="color:${p.avgRating>=4?"#16a34a":p.avgRating>=3?"#d97706":"#dc2626"};">${p.avgRating!=null?p.avgRating.toFixed(1):"—"}</div><div class="l">Rating</div></div><div class="stat-chip"><div class="v" style="color:${dc};">${p.avgDifficulty!=null?p.avgDifficulty.toFixed(1):"—"}</div><div class="l">Difficulty</div></div><div class="stat-chip"><div class="v">${wtag!=null?wtag+"%":"—"}</div><div class="l">Retake</div></div><div class="stat-chip"><div class="v">${p.numRatings??0}</div><div class="l">Reviews</div></div></div></div></div>${easyAHtml}${gradeDist}${courses}</div>${examHtml}<div class="card" style="padding:20px;"><p style="font-weight:800;font-size:14px;margin-bottom:12px;">💬 Student Reviews <span class="tag" style="background:#F5F5F4;color:#6b7280;margin-left:5px;">${isPremium?ratings.length+" total":"3 of "+ratings.length+" free"}</span></p>${reviewsHtml}${moreReviews}</div>${redditHtml}</div>`;
+}
+
+// ── Detail lock (free course users) ──────────────────────────────────────
+function showDetailLock() {
+  const el = document.getElementById("profDetail");
+  el.innerHTML = `<div class="card fade-in" style="padding:22px;">
+    <div class="lock-card" style="margin:0;">
+      <div class="lock-row">
+        <div class="lock-ico">🔒</div>
+        <div>
+          <p class="lock-title">Full Professor Detail — Premium</p>
+          <p class="lock-sub">See all reviews, Easy A score, Reddit mentions, exam info and more. One-time $1.99.</p>
+        </div>
+      </div>
+      <a href="/pay" style="display:block;text-align:center;margin-top:14px;background:linear-gradient(135deg,var(--p2),var(--p1));color:#fff;font-weight:800;font-size:14px;padding:13px;border-radius:12px;text-decoration:none;">Unlock Premium — $1.99</a>
+    </div>
+  </div>`;
+  el.classList.remove("hidden");
+  el.scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+// ── Auth modal ────────────────────────────────────────────────────────────
+function openAuth(tab="login") {
+  // Show/hide account tab based on login state
+  const acctTab = document.getElementById("tabAccount");
+  if (currentUser) { acctTab.classList.remove("hidden"); }
+  else { acctTab.classList.add("hidden"); }
+  switchAuthTab(tab);
+  document.getElementById("authModal").classList.remove("hidden");
+  const focusId = tab==="login"?"loginEmail":tab==="signup"?"signupEmail":null;
+  if (focusId) setTimeout(()=>document.getElementById(focusId)?.focus(), 100);
+}
+function closeAuth() { document.getElementById("authModal").classList.add("hidden"); }
+function switchAuthTab(tab) {
+  ["login","signup","account"].forEach(t => {
+    document.getElementById("auth"+cap(t)).classList.toggle("hidden", t!==tab);
+    const btn = document.getElementById("tab"+cap(t));
+    if (btn) btn.className = "modal-tab" + (t===tab?" on":"") + (t==="account"&&!currentUser?" hidden":"");
+  });
+  if (tab==="account") renderAccountPanel();
+}
+
+function renderAccountPanel() {
+  const el = document.getElementById("accountContent");
+  if (!currentUser) return;
+  const premium = IS_PREMIUM;
+  el.innerHTML = `
+    <div style="background:#F5F0EB;border-radius:12px;padding:14px 16px;margin-bottom:16px;">
+      <p style="font-size:11px;font-weight:700;color:#9ca3af;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px;">Signed in as</p>
+      <p style="font-weight:700;font-size:14px;">${esc(currentUser.email||"")}</p>
+      <p style="font-size:12px;margin-top:4px;">${premium
+        ? `<span style="color:#16a34a;font-weight:700;">⭐ Premium Active</span> — Thank you!`
+        : `<span style="color:#b8a89a;">Free account</span> · <a href="/pay" style="color:var(--p1);font-weight:700;">Upgrade to Premium $1.99 →</a>`}
+      </p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:18px;">
+      <p style="font-size:11px;font-weight:700;color:#9ca3af;letter-spacing:.05em;text-transform:uppercase;margin-bottom:2px;">Privacy</p>
+      <div style="background:#FFFAF7;border:1.5px solid #F0EBE5;border-radius:12px;padding:12px 14px;font-size:13px;color:#374151;line-height:1.6;">
+        🔒 <strong>Your searches are private.</strong> We never sell or share your search history or personal data.<br>
+        🍪 Saved school and preferences are stored locally on your device.<br>
+        📧 Your email is only used for account login — no marketing emails.
+      </div>
+    </div>
+    <button onclick="doLogout();closeAuth();" style="width:100%;padding:12px;border-radius:12px;border:1.5px solid #FECACA;background:#FEF2F2;color:#ef4444;font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;">Sign Out</button>
+  `;
+}
+
+async function doLogin() {
+  const email    = document.getElementById("loginEmail").value.trim();
+  const password = document.getElementById("loginPassword").value;
+  const errEl    = document.getElementById("loginError");
+  errEl.style.display = "none";
+  if (!email || !password) { errEl.textContent="Please fill in all fields."; errEl.style.display="block"; return; }
+  try {
+    const res  = await fetch("/login", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})});
+    const data = await res.json();
+    if (data.error) { errEl.textContent=data.error; errEl.style.display="block"; return; }
+    currentUser = {uid: data.uid, email: data.email, premium: data.premium};
+    IS_PREMIUM = data.premium || IS_PREMIUM;
+    closeAuth();
+    renderHeader();
+    renderProfPanel();
+    loadBookmarkSet();
+    if (IS_PREMIUM) { const c=document.getElementById("proChip"); if(c) c.style.display="none"; }
+  } catch(e) { errEl.textContent="Network error. Please try again."; errEl.style.display="block"; }
+}
+
+async function doSignup() {
+  const email    = document.getElementById("signupEmail").value.trim();
+  const password = document.getElementById("signupPassword").value;
+  const errEl    = document.getElementById("signupError");
+  errEl.style.display = "none";
+  if (!email || !password) { errEl.textContent="Please fill in all fields."; errEl.style.display="block"; return; }
+  try {
+    const res  = await fetch("/signup", {method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email,password})});
+    const data = await res.json();
+    if (data.error) { errEl.textContent=data.error; errEl.style.display="block"; return; }
+    currentUser = {uid: data.uid, email: data.email, premium: false};
+    closeAuth();
+    renderHeader();
+    renderProfPanel();
+    loadBookmarkSet();
+  } catch(e) { errEl.textContent="Network error. Please try again."; errEl.style.display="block"; }
+}
+
+async function doLogout() {
+  await fetch("/logout", {method:"POST"});
+  currentUser = null;
+  bookmarkSet.clear();
+  renderHeader();
+  renderProfPanel();
+  if (activeTab === "saved") setTab("professor");
+}
+
+// ── User menu ─────────────────────────────────────────────────────────────
+function toggleUserMenu() {
+  document.getElementById("userMenu")?.classList.toggle("open");
+}
+document.addEventListener("click", e => {
+  if (!e.target.closest(".user-menu-wrap")) {
+    document.getElementById("userMenu")?.classList.remove("open");
+  }
+});
+
+// ── Bookmarks ─────────────────────────────────────────────────────────────
+async function loadBookmarkSet() {
+  if (!currentUser) return;
+  try {
+    const res  = await fetch("/api/bookmarks");
+    const data = await res.json();
+    bookmarkSet = new Set((data.bookmarks||[]).map(b=>b.ref_id));
+    // Refresh bookmark buttons in current view
+    document.querySelectorAll(".bm-btn").forEach(btn => {
+      const id = btn.dataset.id;
+      btn.classList.toggle("saved", bookmarkSet.has(id));
+      btn.title = bookmarkSet.has(id) ? "Remove bookmark" : "Save professor";
+    });
+  } catch(_) {}
+}
+
+function bmHtml(profId, profName, dept, rating) {
+  const saved = bookmarkSet.has(profId);
+  return `<button class="bm-btn ${saved?"saved":""}" data-id="${esc(profId)}"
+    title="${saved?"Remove bookmark":"Save professor"}"
+    onclick="event.stopPropagation();toggleBookmark('${esc(profId)}','${esc(profName)}','${esc(dept||"")}',${rating??null})">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="${saved?"currentColor":"none"}" stroke="currentColor" stroke-width="2.2">
+      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+    </svg>
+  </button>`;
+}
+
+async function toggleBookmark(profId, profName, dept, rating) {
+  if (!currentUser) { openAuth("login"); return; }
+  const wasSaved = bookmarkSet.has(profId);
+  if (wasSaved) {
+    bookmarkSet.delete(profId);
+    await fetch(`/api/bookmarks/${encodeURIComponent(profId)}`, {method:"DELETE"});
+  } else {
+    bookmarkSet.add(profId);
+    await fetch("/api/bookmarks", {method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({ref_id:profId, name:profName, dept, rating})});
+  }
+  // Update all bookmark buttons for this prof
+  document.querySelectorAll(`.bm-btn[data-id="${CSS.escape(profId)}"]`).forEach(btn => {
+    btn.classList.toggle("saved", bookmarkSet.has(profId));
+    btn.title = bookmarkSet.has(profId) ? "Remove bookmark" : "Save professor";
+    btn.querySelector("svg").setAttribute("fill", bookmarkSet.has(profId) ? "currentColor" : "none");
+  });
+}
+
+async function renderSaved() {
+  const el = document.getElementById("savedList");
+  if (!currentUser) {
+    el.innerHTML = `<div class="saved-empty">
+      <div class="empty-icon">🔖</div>
+      <p style="font-weight:700;font-size:14px;margin-bottom:6px;">Sign in to see saved professors</p>
+      <p style="font-size:12px;margin-bottom:16px;">Create a free account to bookmark professors.</p>
+      <button onclick="openAuth('login')" style="background:linear-gradient(135deg,var(--p2),var(--p1));color:#fff;font-weight:800;font-size:13px;padding:10px 22px;border-radius:10px;border:none;cursor:pointer;">Sign In / Create Account</button>
+    </div>`;
+    return;
+  }
+  el.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;gap:8px;padding:24px 0;color:#b8b0a6;font-size:13px;"><svg class="spinner" width="16" height="16" fill="none" viewBox="0 0 24 24" style="color:var(--p1);"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity=".2"/><path fill="currentColor" opacity=".8" d="M4 12a8 8 0 018-8v8z"/></svg> Loading saved professors…</div>`;
+  try {
+    const res  = await fetch("/api/bookmarks");
+    const data = await res.json();
+    const bms  = data.bookmarks || [];
+    if (!bms.length) {
+      el.innerHTML = `<div class="saved-empty"><div class="empty-icon">🔖</div><p style="font-weight:700;font-size:14px;margin-bottom:6px;">No saved professors yet</p><p style="font-size:12px;">Tap the bookmark icon on any professor to save them here.</p></div>`;
+      return;
+    }
+    el.innerHTML = `<div style="display:flex;flex-direction:column;gap:8px;padding-bottom:4px;">${bms.map(b => {
+      const bg = rGrad(b.rating);
+      const rating = b.rating!=null ? b.rating.toFixed(1) : "?";
+      return `<div class="saved-item" onclick="loadProfessor('${esc(b.ref_id)}','${esc(b.name)}');setTab('professor')">
+        <div style="width:44px;height:44px;border-radius:12px;background:${bg};display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#fff;flex-shrink:0;">${rating}</div>
+        <div style="flex:1;min-width:0;">
+          <p style="font-weight:800;font-size:14px;">${esc(b.name)}</p>
+          <p style="font-size:11px;color:#b8b0a6;margin-top:1px;">${esc(b.dept||"")}</p>
+        </div>
+        <button class="bm-btn saved" data-id="${esc(b.ref_id)}" title="Remove bookmark"
+          onclick="event.stopPropagation();toggleBookmark('${esc(b.ref_id)}','${esc(b.name)}','${esc(b.dept||"")}',${b.rating??null});renderSaved()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2.2">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/>
+          </svg>
+        </button>
+      </div>`;
+    }).join("")}</div>`;
+  } catch(_) { el.innerHTML = `<div class="saved-empty"><div class="empty-icon">⚠️</div><p style="font-size:13px;">Couldn't load bookmarks.</p></div>`; }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────

@@ -1,0 +1,187 @@
+import sqlite3
+import bcrypt
+import jwt
+import datetime
+import os
+import json
+
+DB_PATH    = os.environ.get("DATABASE_PATH", "/tmp/pf_users.db")
+JWT_SECRET = os.environ.get("JWT_SECRET", "dev-secret-change-in-prod")
+AUTH_COOKIE = "pf_auth"
+COOKIE_DAYS = 365 * 10
+
+
+# ── Database ──────────────────────────────────────────────────────────────────
+
+def _db():
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys = ON")
+    return conn
+
+
+def init_db():
+    with _db() as c:
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id            INTEGER PRIMARY KEY AUTOINCREMENT,
+                email         TEXT    UNIQUE NOT NULL COLLATE NOCASE,
+                password_hash TEXT    NOT NULL,
+                created_at    TEXT    DEFAULT (datetime('now')),
+                premium       INTEGER DEFAULT 0,
+                stripe_session TEXT
+            )
+        """)
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS bookmarks (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id    INTEGER NOT NULL,
+                ref_id     TEXT    NOT NULL,
+                type       TEXT    NOT NULL DEFAULT 'professor',
+                name       TEXT,
+                dept       TEXT,
+                rating     REAL,
+                data       TEXT,
+                created_at TEXT    DEFAULT (datetime('now')),
+                UNIQUE(user_id, ref_id),
+                FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        """)
+        c.commit()
+
+
+# ── Users ─────────────────────────────────────────────────────────────────────
+
+def create_user(email: str, password: str):
+    """Create a new user. Returns (user_row, None) or (None, error_str)."""
+    email = email.strip().lower()
+    if not email or "@" not in email:
+        return None, "Invalid email address."
+    if len(password) < 6:
+        return None, "Password must be at least 6 characters."
+    pw_hash = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
+    try:
+        with _db() as c:
+            c.execute("INSERT INTO users (email, password_hash) VALUES (?, ?)", (email, pw_hash))
+            c.commit()
+            row = c.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+            return dict(row), None
+    except sqlite3.IntegrityError:
+        return None, "An account with that email already exists."
+    except Exception as e:
+        return None, str(e)
+
+
+def verify_user(email: str, password: str):
+    """Returns user dict if credentials are valid, else None."""
+    email = email.strip().lower()
+    with _db() as c:
+        row = c.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+    if not row:
+        return None
+    if bcrypt.checkpw(password.encode(), row["password_hash"].encode()):
+        return dict(row)
+    return None
+
+
+def get_user(user_id: int):
+    with _db() as c:
+        row = c.execute("SELECT * FROM users WHERE id = ?", (user_id,)).fetchone()
+    return dict(row) if row else None
+
+
+def set_premium(user_id: int, stripe_session: str):
+    with _db() as c:
+        c.execute("UPDATE users SET premium = 1, stripe_session = ? WHERE id = ?",
+                  (stripe_session, user_id))
+        c.commit()
+
+
+# ── JWT auth tokens ───────────────────────────────────────────────────────────
+
+def make_token(user_id: int, email: str, premium: bool) -> str:
+    payload = {
+        "uid":     user_id,
+        "email":   email,
+        "premium": premium,
+        "iat":     datetime.datetime.utcnow(),
+    }
+    return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
+
+
+def decode_token(token: str):
+    """Returns payload dict or None."""
+    try:
+        return jwt.decode(token, JWT_SECRET, algorithms=["HS256"])
+    except Exception:
+        return None
+
+
+def get_current_user(request):
+    """Extract logged-in user from request cookies. Returns payload dict or None."""
+    token = request.cookies.get(AUTH_COOKIE)
+    if not token:
+        return None
+    return decode_token(token)
+
+
+def set_auth_cookie(response, user_id: int, email: str, premium: bool):
+    token = make_token(user_id, email, premium)
+    response.set_cookie(
+        AUTH_COOKIE, token,
+        max_age=60 * 60 * 24 * COOKIE_DAYS,
+        httponly=True, secure=True, samesite="Lax",
+    )
+    return response
+
+
+def clear_auth_cookie(response):
+    response.delete_cookie(AUTH_COOKIE)
+    return response
+
+
+# ── Bookmarks ─────────────────────────────────────────────────────────────────
+
+def add_bookmark(user_id: int, ref_id: str, name: str, dept: str, rating, data: dict):
+    try:
+        with _db() as c:
+            c.execute(
+                "INSERT OR REPLACE INTO bookmarks (user_id, ref_id, name, dept, rating, data) VALUES (?,?,?,?,?,?)",
+                (user_id, ref_id, name, dept, rating, json.dumps(data))
+            )
+            c.commit()
+        return True
+    except Exception:
+        return False
+
+
+def remove_bookmark(user_id: int, ref_id: str):
+    with _db() as c:
+        c.execute("DELETE FROM bookmarks WHERE user_id = ? AND ref_id = ?", (user_id, ref_id))
+        c.commit()
+
+
+def get_bookmarks(user_id: int) -> list:
+    with _db() as c:
+        rows = c.execute(
+            "SELECT * FROM bookmarks WHERE user_id = ? ORDER BY created_at DESC",
+            (user_id,)
+        ).fetchall()
+    result = []
+    for r in rows:
+        item = dict(r)
+        try:
+            item["data"] = json.loads(item["data"] or "{}")
+        except Exception:
+            item["data"] = {}
+        result.append(item)
+    return result
+
+
+def is_bookmarked(user_id: int, ref_id: str) -> bool:
+    with _db() as c:
+        row = c.execute(
+            "SELECT id FROM bookmarks WHERE user_id = ? AND ref_id = ?",
+            (user_id, ref_id)
+        ).fetchone()
+    return row is not None
