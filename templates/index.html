@@ -96,7 +96,7 @@
 
     .search-row { display: flex; gap: 8px; padding: 0 4px 4px; }
     .search-row input {
-      flex: 1; border: 2px solid #F0EBE5; border-radius: 12px; padding: 11px 15px;
+      width: 100%; border: 2px solid #F0EBE5; border-radius: 12px; padding: 11px 15px;
       font-size: 14px; font-family: 'Inter', sans-serif; background: #FFFAF7;
       transition: border-color .15s; outline: none;
     }
@@ -293,10 +293,17 @@
       position: fixed; bottom: 0; left: 0; right: 0; z-index: 500;
       background: #fff; border-top: 1.5px solid #F0EBE5;
       box-shadow: 0 -4px 24px rgba(0,0,0,.12);
-      padding: 14px 20px; display: flex; align-items: center; gap: 12px;
+      padding: 14px 20px;
+      padding-bottom: calc(14px + env(safe-area-inset-bottom));
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
       transform: translateY(100%); transition: transform .25s ease;
     }
     .compare-bar.show { transform: translateY(0); }
+    @media(max-width:480px){
+      .compare-bar { gap: 8px; padding: 10px 14px; padding-bottom: calc(10px + env(safe-area-inset-bottom)); }
+      .compare-slot { font-size: 11px; padding: 6px 10px; }
+      .compare-go-btn { font-size: 12px; padding: 8px 14px; }
+    }
     .compare-slot {
       flex: 1; min-width: 0; background: #FFFAF7; border: 1.5px solid #F0EBE5;
       border-radius: 10px; padding: 8px 12px; font-size: 12px; font-weight: 700;
@@ -495,7 +502,13 @@
         <p class="modal-sub">Sign in to access your saved professors.</p>
         <div id="loginError" class="auth-error"></div>
         <div class="field-group"><label>Email</label><input id="loginEmail" type="email" placeholder="you@example.com" autocomplete="email"/></div>
-        <div class="field-group"><label>Password</label><input id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+        <div class="field-group">
+          <label style="display:flex;justify-content:space-between;align-items:center;">
+            Password
+            <a href="/forgot-password" style="font-size:11px;font-weight:600;color:var(--p1);text-decoration:none;" onclick="closeAuth()">Forgot password?</a>
+          </label>
+          <input id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+        </div>
         <button class="auth-btn" onclick="doLogin()">Sign In</button>
       </div>
 
@@ -1606,16 +1619,51 @@ async function browseDepartment(dept) {
   clearDetail();
   if (!SCHOOL.id) { await resolveSchoolId(SCHOOL); }
   const sid = SCHOOL.id || "";
-  showSkeleton("searchResults", 4);
+  // Check if index is cached first
+  let cached = false;
+  try { cached = (await (await fetch(`/api/index-status?school_id=${encodeURIComponent(sid)}`)).json()).cached; } catch(_){}
+  if (!cached) {
+    showLoader("searchResults", `Building professor index for ${esc(SCHOOL.name)} — hold tight (~15 sec)…`);
+  } else {
+    showSkeleton("searchResults", 4);
+  }
   document.getElementById("searchResults").classList.remove("hidden");
   try {
     const res  = await fetch(`/api/department?dept=${encodeURIComponent(dept)}&school_id=${encodeURIComponent(sid)}`);
     const data = await res.json();
     if (data.error) { showError(data.error); return; }
+    if (!data.results?.length) { showError(`No professors found in <strong>${esc(dept)}</strong>.`); return; }
     renderProfList(data.results, data.truncated, data.total);
-    // Scroll to results
     document.getElementById("searchResults").scrollIntoView({behavior:"smooth",block:"start"});
   } catch(_) { showError("Network error."); }
+}
+
+// ── PWA install prompt ────────────────────────────────────────────────────
+let _deferredInstall = null;
+window.addEventListener("beforeinstallprompt", e => {
+  e.preventDefault();
+  _deferredInstall = e;
+  // Show install chip after 30s if user hasn't dismissed it
+  setTimeout(showInstallPrompt, 30000);
+});
+
+function showInstallPrompt() {
+  if (!_deferredInstall) return;
+  if (localStorage.getItem("pf_install_dismissed")) return;
+  const t = document.getElementById("toast");
+  t.innerHTML = `Add to home screen <button onclick="triggerInstall()" style="background:#fff;color:#111;border:none;border-radius:6px;padding:3px 10px;font-size:12px;font-weight:800;cursor:pointer;margin-left:8px;">Install</button> <span onclick="dismissInstall()" style="margin-left:6px;cursor:pointer;opacity:.6;">✕</span>`;
+  t.classList.add("show");
+}
+
+function triggerInstall() {
+  if (!_deferredInstall) return;
+  _deferredInstall.prompt();
+  _deferredInstall.userChoice.then(() => { _deferredInstall = null; document.getElementById("toast").classList.remove("show"); });
+}
+
+function dismissInstall() {
+  localStorage.setItem("pf_install_dismissed", "1");
+  document.getElementById("toast").classList.remove("show");
 }
 
 // ── Deep-link: ?prof=ID auto-load ────────────────────────────────────────

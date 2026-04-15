@@ -104,7 +104,12 @@ def login():
     user     = auth.verify_user(email, password)
     if not user:
         return jsonify({"error": "Incorrect email or password."}), 401
-    premium = bool(user.get("premium")) or payment.is_premium(request)
+    has_legacy_premium = payment.is_premium(request)
+    premium = bool(user.get("premium")) or has_legacy_premium
+    # Promote legacy cookie premium to the account permanently
+    if has_legacy_premium and not user.get("premium"):
+        auth.set_premium(user["id"], "legacy-cookie-promotion")
+        premium = True
     resp = make_response(jsonify({"ok": True, "email": user["email"], "premium": premium}))
     auth.set_auth_cookie(resp, user["id"], user["email"], premium)
     return resp
@@ -392,20 +397,81 @@ def admin_logout():
 def admin_dashboard():
     if not _admin_ok():
         return redirect("/admin/login")
-    import sqlite3
     stats = {}
+    users = []
+    reset_tokens = []
     try:
         with auth._db() as c:
             stats["total_users"]   = c.execute("SELECT COUNT(*) FROM users").fetchone()[0]
             stats["premium_users"] = c.execute("SELECT COUNT(*) FROM users WHERE premium=1").fetchone()[0]
             stats["total_bm"]      = c.execute("SELECT COUNT(*) FROM bookmarks").fetchone()[0]
+            stats["revenue_est"]   = round(stats["premium_users"] * 1.99, 2)
+            stats["total_views"]   = c.execute("SELECT COALESCE(SUM(views),0) FROM professor_views").fetchone()[0]
             users = [dict(r) for r in c.execute(
                 "SELECT id, email, premium, created_at, stripe_session FROM users ORDER BY created_at DESC LIMIT 200"
             ).fetchall()]
+            reset_tokens = [dict(r) for r in c.execute(
+                """SELECT rt.token, u.email, rt.expires_at, rt.used
+                   FROM reset_tokens rt JOIN users u ON u.id=rt.user_id
+                   WHERE rt.used=0 AND rt.expires_at > datetime('now')
+                   ORDER BY rt.expires_at DESC LIMIT 20"""
+            ).fetchall()]
     except Exception as e:
         stats = {"error": str(e)}
-        users = []
-    return render_template("admin.html", stats=stats, users=users)
+    return render_template("admin.html", stats=stats, users=users, reset_tokens=reset_tokens)
+
+
+# ── Password reset routes ──────────────────────────────────────────────────────
+
+@app.route("/forgot-password", methods=["GET", "POST"])
+def forgot_password():
+    if request.method == "GET":
+        return render_template("forgot_password.html", sent=False, error="")
+    email = (request.form.get("email") or "").strip()
+    if not email or "@" not in email:
+        return render_template("forgot_password.html", sent=False, error="Please enter a valid email.")
+    token, err = auth.create_reset_token(email)
+    # Always show "sent" to avoid leaking whether email exists
+    reset_url = f"{request.host_url.rstrip('/')}/reset-password/{token}"
+    # TODO: send email. For now surface the link in the admin dashboard.
+    app.logger.info(f"[RESET] {email} → {reset_url}")
+    return render_template("forgot_password.html", sent=True, error="", reset_url=reset_url if app.debug else "")
+
+
+@app.route("/reset-password/<token>", methods=["GET", "POST"])
+def reset_password(token):
+    if request.method == "GET":
+        user_id = auth.consume_reset_token.__wrapped__(token) if hasattr(auth.consume_reset_token, '__wrapped__') else None
+        # Just show form — validate on POST
+        return render_template("reset_password.html", token=token, error="", done=False)
+    password = request.form.get("password", "")
+    confirm  = request.form.get("confirm", "")
+    if len(password) < 6:
+        return render_template("reset_password.html", token=token, error="Password must be at least 6 characters.", done=False)
+    if password != confirm:
+        return render_template("reset_password.html", token=token, error="Passwords don't match.", done=False)
+    user_id = auth.consume_reset_token(token)
+    if not user_id:
+        return render_template("reset_password.html", token=token, error="This reset link has expired or already been used.", done=False)
+    auth.set_password(user_id, password)
+    return render_template("reset_password.html", token=token, error="", done=True)
+
+
+# ── Error handlers ─────────────────────────────────────────────────────────────
+
+@app.errorhandler(404)
+def not_found(e):
+    return render_template("404.html"), 404
+
+
+@app.errorhandler(500)
+def server_error(e):
+    return render_template("404.html", code=500, message="Something went wrong on our end."), 500
+
+
+@app.errorhandler(429)
+def rate_limited(e):
+    return jsonify({"error": "Too many requests — slow down and try again."}), 429
 
 
 if __name__ == "__main__":

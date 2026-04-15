@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <meta http-equiv="refresh" content="60"/>
   <title>Admin Dashboard — Professor Finder</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -86,9 +87,19 @@
         <div class="l">Premium Users</div>
       </div>
       <div class="stat-card">
+        <div class="icon">💰</div>
+        <div class="v">${{ stats.revenue_est or "0.00" }}</div>
+        <div class="l">Est. Revenue</div>
+      </div>
+      <div class="stat-card">
         <div class="icon">🔖</div>
         <div class="v">{{ stats.total_bm or 0 }}</div>
         <div class="l">Total Bookmarks</div>
+      </div>
+      <div class="stat-card">
+        <div class="icon">👁️</div>
+        <div class="v">{{ stats.total_views or 0 }}</div>
+        <div class="l">Prof. Views</div>
       </div>
       <div class="stat-card">
         <div class="icon">📊</div>
@@ -96,6 +107,27 @@
         <div class="l">Conversion Rate</div>
       </div>
     </div>
+
+    <!-- Pending reset tokens (password-reset help) -->
+    {% if reset_tokens %}
+    <p class="section-title" style="margin-bottom:8px;margin-top:0;">🔑 Pending Reset Links</p>
+    <div class="table-wrap" style="margin-bottom:24px;">
+      <table>
+        <thead><tr><th>Email</th><th>Reset URL</th><th>Expires</th></tr></thead>
+        <tbody>
+          {% for t in reset_tokens %}
+          <tr>
+            <td class="email-cell">{{ t.email }}</td>
+            <td style="font-size:11px;font-family:monospace;color:#475569;">
+              <a href="/reset-password/{{ t.token }}" style="color:#6366f1;" target="_blank">/reset-password/{{ t.token[:20] }}…</a>
+            </td>
+            <td style="font-size:11px;color:#64748b;">{{ t.expires_at[:16] }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
 
     <!-- Users table -->
     <p class="section-title">Users</p>

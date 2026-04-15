@@ -4,6 +4,7 @@ import jwt
 import datetime
 import os
 import json
+import secrets
 
 DB_PATH    = os.environ.get("DATABASE_PATH", "/tmp/pf_users.db")
 JWT_SECRET = os.environ.get("JWT_SECRET", "dev-secret-change-in-prod")
@@ -45,6 +46,19 @@ def init_db():
                 created_at TEXT    DEFAULT (datetime('now')),
                 UNIQUE(user_id, ref_id),
                 FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+            )
+        """)
+        # Add email_verified column if it doesn't exist yet (migration-safe)
+        try:
+            c.execute("ALTER TABLE users ADD COLUMN email_verified INTEGER DEFAULT 0")
+        except Exception:
+            pass
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS reset_tokens (
+                token      TEXT    PRIMARY KEY,
+                user_id    INTEGER NOT NULL,
+                expires_at TEXT    NOT NULL,
+                used       INTEGER DEFAULT 0
             )
         """)
         c.execute("""
@@ -144,6 +158,60 @@ def set_premium(user_id: int, stripe_session: str):
     with _db() as c:
         c.execute("UPDATE users SET premium = 1, stripe_session = ? WHERE id = ?",
                   (stripe_session, user_id))
+        c.commit()
+
+
+def get_user_by_email(email: str):
+    email = email.strip().lower()
+    with _db() as c:
+        row = c.execute("SELECT * FROM users WHERE email = ?", (email,)).fetchone()
+    return dict(row) if row else None
+
+
+# ── Password reset ────────────────────────────────────────────────────────────
+
+def create_reset_token(email: str):
+    """Create a password-reset token. Returns (token, None) or (None, error)."""
+    user = get_user_by_email(email)
+    if not user:
+        # Don't reveal whether email exists
+        return secrets.token_urlsafe(32), None
+    token = secrets.token_urlsafe(32)
+    expires = (datetime.datetime.utcnow() + datetime.timedelta(hours=2)).isoformat()
+    try:
+        with _db() as c:
+            # Invalidate old tokens for this user
+            c.execute("DELETE FROM reset_tokens WHERE user_id = ?", (user["id"],))
+            c.execute("INSERT INTO reset_tokens (token, user_id, expires_at) VALUES (?,?,?)",
+                      (token, user["id"], expires))
+            c.commit()
+        return token, None
+    except Exception as e:
+        return None, str(e)
+
+
+def consume_reset_token(token: str):
+    """Returns user_id if token is valid + unused + not expired, else None."""
+    try:
+        with _db() as c:
+            row = c.execute(
+                "SELECT * FROM reset_tokens WHERE token=? AND used=0", (token,)
+            ).fetchone()
+            if not row:
+                return None
+            if datetime.datetime.utcnow().isoformat() > row["expires_at"]:
+                return None
+            c.execute("UPDATE reset_tokens SET used=1 WHERE token=?", (token,))
+            c.commit()
+            return row["user_id"]
+    except Exception:
+        return None
+
+
+def set_password(user_id: int, new_password: str):
+    pw_hash = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt()).decode()
+    with _db() as c:
+        c.execute("UPDATE users SET password_hash=? WHERE id=?", (pw_hash, user_id))
         c.commit()
 
 

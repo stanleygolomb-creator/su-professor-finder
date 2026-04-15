@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+  <title>Page Not Found — Professor Finder</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Inter',sans-serif;background:#FFFAF5;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+    .wrap{text-align:center;max-width:420px;}
+    .emoji{font-size:72px;margin-bottom:20px;display:block;animation:bob 3s ease-in-out infinite;}
+    @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+    h1{font-size:28px;font-weight:900;letter-spacing:-.5px;margin-bottom:8px;}
+    p{font-size:14px;color:#9ca3af;line-height:1.6;margin-bottom:28px;}
+    .btn{display:inline-block;background:linear-gradient(135deg,#FF7A1A,#C03E00);color:#fff;font-weight:800;font-size:14px;font-family:'Inter',sans-serif;padding:12px 28px;border-radius:12px;text-decoration:none;transition:opacity .15s;}
+    .btn:hover{opacity:.9;}
+    .code{font-size:80px;font-weight:900;color:#F0EBE5;letter-spacing:-4px;line-height:1;margin-bottom:8px;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="code">{{ code | default(404) }}</div>
+    <span class="emoji">🎓</span>
+    <h1>{% if code == 500 %}Something broke{% else %}Page not found{% endif %}</h1>
+    <p>{{ message | default("This page doesn't exist or was moved. Head back and find your professor.") }}</p>
+    <a href="/" class="btn">← Back to Professor Finder</a>
+  </div>
+</body>
+</html>
