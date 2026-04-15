@@ -22,6 +22,11 @@ def _is_paid(req):
         return False
 
 
+def is_premium(req):
+    """Public helper — returns True if the request has a valid access cookie."""
+    return _is_paid(req)
+
+
 def require_payment(f):
     """Decorator — redirects to /pay if no valid access cookie."""
     @functools.wraps(f)

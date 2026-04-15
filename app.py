@@ -67,17 +67,38 @@ def payment_success():
     return resp
 
 
-# ── Protected routes ──────────────────────────────────────────────────────────
+# ── Free routes ───────────────────────────────────────────────────────────────
 
 @app.route("/")
-@payment.require_payment
 def index():
-    return render_template("index.html")
+    premium = payment.is_premium(request)
+    return render_template("index.html", premium=premium)
 
+
+@app.route("/api/search")
+def search():
+    name = request.args.get("name", "").strip()
+    if not name or len(name) < 2:
+        return jsonify({"error": "Please enter a professor name"}), 400
+    try:
+        professors = rmp.search_professors(name)
+        return jsonify({"results": professors})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route("/api/index-status")
+def index_status():
+    return jsonify({"cached": rmp.is_cache_fresh()})
+
+
+# ── Premium routes ────────────────────────────────────────────────────────────
 
 @app.route("/api/course")
-@payment.require_payment
 def course_search():
+    if not payment.is_premium(request):
+        return jsonify({"error": "premium_required"}), 403
+
     course = request.args.get("course", "").strip()
     if not course or len(course) < 2:
         return jsonify({"error": "Please enter a course name or code"}), 400
@@ -90,28 +111,7 @@ def course_search():
         return jsonify({"error": str(e)}), 500
 
 
-@app.route("/api/index-status")
-@payment.require_payment
-def index_status():
-    return jsonify({"cached": rmp.is_cache_fresh()})
-
-
-@app.route("/api/search")
-@payment.require_payment
-def search():
-    name = request.args.get("name", "").strip()
-    if not name or len(name) < 2:
-        return jsonify({"error": "Please enter a professor name"}), 400
-
-    try:
-        professors = rmp.search_professors(name)
-        return jsonify({"results": professors})
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-
-
 @app.route("/api/professor/<professor_id>")
-@payment.require_payment
 def professor_detail(professor_id):
     try:
         data = rmp.get_professor_ratings(professor_id)
@@ -119,29 +119,45 @@ def professor_detail(professor_id):
             return jsonify({"error": "Professor not found"}), 404
 
         ratings_list = [e["node"] for e in (data.get("ratings") or {}).get("edges", [])]
+        full_name = f"{data.get('firstName', '')} {data.get('lastName', '')}".strip()
+        rmp_url = rmp.build_rmp_url(professor_id)
+        prof_base = {
+            "id": data.get("id"),
+            "name": full_name,
+            "department": data.get("department"),
+            "avgRating": data.get("avgRating"),
+            "avgDifficulty": data.get("avgDifficulty"),
+            "numRatings": data.get("numRatings"),
+            "wouldTakeAgainPercent": data.get("wouldTakeAgainPercent"),
+            "rmpUrl": rmp_url,
+            "courseCodes": data.get("courseCodes", []),
+        }
+
+        premium = payment.is_premium(request)
+
+        if not premium:
+            # Free tier: basic stats + 3 reviews, no premium features
+            return jsonify({
+                "professor": prof_base,
+                "ratings": ratings_list[:3],
+                "easyA": None,
+                "examMentions": [],
+                "redditPosts": [],
+                "isPremium": False,
+            })
+
+        # Premium tier: full data
         easy_a = rmp.compute_easy_a(data)
         exam_mentions = rmp.parse_exam_info(ratings_list)
-        rmp_url = rmp.build_rmp_url(professor_id)
-
-        full_name = f"{data.get('firstName', '')} {data.get('lastName', '')}".strip()
         reddit_posts = reddit_scraper.search_reddit_multi(full_name)
 
         return jsonify({
-            "professor": {
-                "id": data.get("id"),
-                "name": full_name,
-                "department": data.get("department"),
-                "avgRating": data.get("avgRating"),
-                "avgDifficulty": data.get("avgDifficulty"),
-                "numRatings": data.get("numRatings"),
-                "wouldTakeAgainPercent": data.get("wouldTakeAgainPercent"),
-                "rmpUrl": rmp_url,
-                "courseCodes": data.get("courseCodes", []),
-            },
+            "professor": prof_base,
             "ratings": ratings_list,
             "easyA": easy_a,
             "examMentions": exam_mentions,
             "redditPosts": reddit_posts,
+            "isPremium": True,
         })
     except Exception as e:
         return jsonify({"error": str(e)}), 500

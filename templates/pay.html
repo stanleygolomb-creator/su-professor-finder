@@ -3,281 +3,218 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SU Professor Finder — Get Access</title>
+  <title>SU Professor Finder — Upgrade to Premium</title>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #FFFAF5; min-height: 100vh; display: flex; flex-direction: column; }
 
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #f5f4f0;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
+    /* ── Hero header ── */
+    .hero {
+      background: linear-gradient(160deg, #C03E00 0%, #E85D00 45%, #FF7A1A 80%, #FF9A45 100%);
+      padding: 20px 24px 0;
+      position: relative; overflow: hidden;
     }
+    .hero::before {
+      content: "";
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between;
+      position: relative; z-index: 10;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-text { color: rgba(255,255,255,0.95); font-weight: 800; font-size: 15px; letter-spacing: -0.2px; }
+    .brand-sub { color: rgba(255,255,255,0.55); font-size: 11px; font-weight: 500; }
+    .back-link {
+      color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 600;
+      text-decoration: none; display: flex; align-items: center; gap: 4px;
+    }
+    .back-link:hover { color: #fff; }
 
-    /* ── Header ── */
-    header {
-      background: linear-gradient(135deg, #111827, #1f2937);
-      padding: 18px 24px;
-      display: flex;
-      align-items: center;
-      gap: 14px;
+    .hero-center {
+      text-align: center; padding: 32px 16px 52px;
+      position: relative; z-index: 10;
     }
-    .header-icon {
-      width: 38px; height: 38px;
-      background: linear-gradient(135deg, #f97316, #ea580c);
-      border-radius: 10px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 20px;
-      flex-shrink: 0;
-    }
-    .header-text h1 {
-      color: #fff;
-      font-size: 17px;
-      font-weight: 700;
-      letter-spacing: -0.3px;
-    }
-    .header-text p {
-      color: #9ca3af;
-      font-size: 12px;
-      margin-top: 1px;
-    }
+    .otto { font-size: 64px; line-height: 1; display: block; margin-bottom: 12px;
+      filter: drop-shadow(0 8px 20px rgba(0,0,0,0.18));
+      animation: bob 3s ease-in-out infinite; }
+    @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
 
-    /* ── Main ── */
-    main {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 48px 20px;
+    .hero-center h1 {
+      font-size: clamp(24px, 5vw, 36px); font-weight: 900;
+      color: #fff; letter-spacing: -1px; line-height: 1.1;
+      text-shadow: 0 2px 12px rgba(0,0,0,0.15);
     }
+    .hero-center p { color: rgba(255,255,255,0.78); font-size: 14px; margin-top: 8px; line-height: 1.6; }
 
-    .card {
+    /* ── Main card ── */
+    main { flex: 1; display: flex; justify-content: center; padding: 0 16px 60px; margin-top: -28px; position: relative; z-index: 20; }
+
+    .upgrade-card {
       background: #fff;
-      border-radius: 20px;
-      border: 1px solid #e5e7eb;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
-      padding: 48px 40px;
-      max-width: 460px;
-      width: 100%;
-      text-align: center;
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.06);
+      padding: 32px 28px;
+      max-width: 480px; width: 100%;
+      align-self: flex-start;
     }
 
-    .price-badge {
-      display: inline-flex;
-      align-items: baseline;
-      gap: 4px;
-      background: linear-gradient(135deg, #111827, #1f2937);
-      color: #fff;
-      border-radius: 50px;
-      padding: 8px 22px;
-      margin-bottom: 28px;
-    }
-    .price-badge .dollar {
-      font-size: 18px;
-      font-weight: 600;
-      opacity: 0.8;
-    }
-    .price-badge .amount {
-      font-size: 32px;
-      font-weight: 800;
-      letter-spacing: -1px;
-    }
-    .price-badge .period {
-      font-size: 13px;
-      opacity: 0.7;
-      margin-left: 2px;
-    }
+    /* ── Free vs Premium comparison ── */
+    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
+    .tier-col { border-radius: 16px; padding: 18px 16px; }
+    .tier-col.free-col { background: #F9F9F9; border: 1.5px solid #F0EBE5; }
+    .tier-col.pro-col  { background: linear-gradient(135deg,#FFF8F2,#FFF0E0); border: 2px solid #FDBA74; }
 
-    h2 {
-      font-size: 26px;
-      font-weight: 800;
-      color: #111827;
-      letter-spacing: -0.5px;
-      margin-bottom: 8px;
+    .tier-label {
+      font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 12px; display: flex; align-items: center; gap: 5px;
     }
-    .subtitle {
-      color: #6b7280;
-      font-size: 15px;
-      margin-bottom: 36px;
-      line-height: 1.5;
-    }
+    .tier-label.free-label { color: #9ca3af; }
+    .tier-label.pro-label  { color: #C03E00; }
 
-    /* ── Feature list ── */
-    .features {
-      list-style: none;
-      text-align: left;
-      margin-bottom: 36px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
+    .tier-price { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 14px; }
+    .free-col .tier-price { color: #374151; }
+    .pro-col .tier-price  { color: #C03E00; }
+    .tier-price small { font-size: 12px; font-weight: 500; color: #9ca3af; }
+
+    .feature-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+    .feature-list li {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 12px; line-height: 1.4;
     }
-    .features li {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-    }
-    .check {
-      width: 22px; height: 22px;
-      background: linear-gradient(135deg, #22c55e, #16a34a);
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      margin-top: 1px;
-    }
-    .check svg {
-      width: 12px; height: 12px;
-      stroke: #fff;
-      stroke-width: 2.5;
-      fill: none;
-    }
-    .features li span {
-      font-size: 14px;
-      color: #374151;
-      line-height: 1.5;
-    }
+    .free-col .feature-list li { color: #6b7280; }
+    .pro-col  .feature-list li { color: #374151; font-weight: 500; }
+    .fi { flex-shrink: 0; margin-top: 1px; font-size: 13px; }
 
     /* ── CTA ── */
-    .cta-btn {
-      display: block;
-      width: 100%;
-      background: linear-gradient(135deg, #f97316, #ea580c);
-      color: #fff;
-      font-family: 'Inter', sans-serif;
-      font-size: 16px;
-      font-weight: 700;
-      padding: 16px 24px;
-      border-radius: 14px;
-      border: none;
-      cursor: pointer;
-      text-decoration: none;
-      transition: opacity 0.15s, transform 0.1s;
-      letter-spacing: -0.2px;
+    .cta-section { text-align: center; }
+    .price-tag {
+      display: inline-flex; align-items: baseline; gap: 3px;
+      background: linear-gradient(135deg,#FFF3E8,#FFE8D0);
+      border: 2px solid #FDBA74;
+      border-radius: 14px; padding: 10px 20px; margin-bottom: 16px;
     }
-    .cta-btn:hover { opacity: 0.92; transform: translateY(-1px); }
+    .price-tag .dollar { font-size: 18px; font-weight: 700; color: #C03E00; }
+    .price-tag .amount { font-size: 36px; font-weight: 900; color: #C03E00; letter-spacing: -1px; }
+    .price-tag .note { font-size: 12px; color: #9ca3af; font-weight: 500; margin-left: 4px; }
+
+    .cta-btn {
+      display: block; width: 100%;
+      background: linear-gradient(135deg, #F76900, #C03E00);
+      color: #fff; font-family: 'Inter', sans-serif;
+      font-size: 16px; font-weight: 900; letter-spacing: -0.2px;
+      padding: 17px 24px; border-radius: 16px; border: none;
+      cursor: pointer; text-decoration: none;
+      box-shadow: 0 6px 24px rgba(192,62,0,0.3);
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .cta-btn:hover  { opacity: 0.92; transform: translateY(-1px); }
     .cta-btn:active { transform: translateY(0); }
 
     .secure-note {
-      font-size: 12px;
-      color: #9ca3af;
-      margin-top: 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 5px;
-    }
-    .secure-note svg {
-      width: 12px; height: 12px;
-      stroke: #9ca3af;
-      stroke-width: 2;
-      fill: none;
+      font-size: 11px; color: #b8b0a6; margin-top: 12px;
+      display: flex; align-items: center; justify-content: center; gap: 5px;
     }
 
-    .error-msg {
-      color: #ef4444;
-      font-size: 13px;
-      margin-top: 16px;
-      padding: 10px 14px;
-      background: #fef2f2;
-      border-radius: 8px;
-      border: 1px solid #fecaca;
-    }
-
-    /* ── Divider ── */
-    .divider {
-      height: 1px;
-      background: #f3f4f6;
-      margin: 28px 0;
-    }
+    .divider { height: 1px; background: #F0EBE5; margin: 24px 0; }
 
     .social-proof {
-      font-size: 12px;
-      color: #9ca3af;
+      text-align: center; font-size: 12px; color: #b8b0a6; line-height: 1.6;
     }
-    .social-proof strong {
-      color: #6b7280;
+    .social-proof strong { color: #6b7280; }
+
+    /* ── Error ── */
+    .error-box {
+      background: #FEF2F2; border: 1px solid #FECACA;
+      border-radius: 10px; padding: 10px 14px;
+      color: #ef4444; font-size: 13px; margin-top: 14px;
+      display: none;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <div class="header-icon">🍊</div>
-    <div class="header-text">
-      <h1>SU Professor Finder</h1>
-      <p>Syracuse University · Course & Professor Intel</p>
+  <div class="hero">
+    <div class="topbar">
+      <div class="brand">
+        <span style="font-size:24px;">🍊</span>
+        <div>
+          <div class="brand-text">SU Professor Finder</div>
+          <div class="brand-sub">Syracuse University</div>
+        </div>
+      </div>
+      <a href="/" class="back-link">← Back</a>
     </div>
-  </header>
+    <div class="hero-center">
+      <span class="otto">🍊</span>
+      <h1>Go Premium.<br>Go Orange.</h1>
+      <p>One-time $1.99 — no subscription, no renewals, ever.</p>
+    </div>
+  </div>
 
   <main>
-    <div class="card">
+    <div class="upgrade-card">
 
-      <div class="price-badge">
-        <span class="dollar">$</span>
-        <span class="amount">1.99</span>
-        <span class="period">one-time</span>
+      <!-- Free vs Premium comparison -->
+      <div class="compare">
+        <div class="tier-col free-col">
+          <div class="tier-label free-label">🆓 Free</div>
+          <div class="tier-price">$0 <small>always</small></div>
+          <ul class="feature-list">
+            <li><span class="fi">✓</span> Professor name search</li>
+            <li><span class="fi">✓</span> Ratings & difficulty</li>
+            <li><span class="fi">✓</span> Courses taught</li>
+            <li><span class="fi">✓</span> 3 student reviews</li>
+            <li><span class="fi" style="color:#d1d5db;">✗</span> <span style="color:#d1d5db;">Course search</span></li>
+            <li><span class="fi" style="color:#d1d5db;">✗</span> <span style="color:#d1d5db;">Easy A score</span></li>
+            <li><span class="fi" style="color:#d1d5db;">✗</span> <span style="color:#d1d5db;">Reddit mentions</span></li>
+          </ul>
+        </div>
+        <div class="tier-col pro-col">
+          <div class="tier-label pro-label">⭐ Premium</div>
+          <div class="tier-price">$1.99 <small>once</small></div>
+          <ul class="feature-list">
+            <li><span class="fi">✓</span> Everything in Free</li>
+            <li><span class="fi">🔍</span> Course search + ranking</li>
+            <li><span class="fi">🍀</span> Easy A detector</li>
+            <li><span class="fi">📊</span> Grade distribution</li>
+            <li><span class="fi">📝</span> Exam mentions</li>
+            <li><span class="fi">💬</span> All reviews unlocked</li>
+            <li><span class="fi">🤙</span> Reddit posts</li>
+          </ul>
+        </div>
       </div>
 
-      <h2>Unlock Lifetime Access</h2>
-      <p class="subtitle">Pay once, use forever. No subscription, no renewals.</p>
-
-      <ul class="features">
-        <li>
-          <div class="check">
-            <svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg>
-          </div>
-          <span>Search any professor at Syracuse University</span>
-        </li>
-        <li>
-          <div class="check">
-            <svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg>
-          </div>
-          <span>Find all professors teaching a specific course, ranked by student data</span>
-        </li>
-        <li>
-          <div class="check">
-            <svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg>
-          </div>
-          <span>Easy A detector, exam mentions &amp; grade distribution insights</span>
-        </li>
-        <li>
-          <div class="check">
-            <svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg>
-          </div>
-          <span>Real student reviews + Reddit mentions from r/Syracuse</span>
-        </li>
-        <li>
-          <div class="check">
-            <svg viewBox="0 0 12 12"><polyline points="2,6 5,9 10,3"/></svg>
-          </div>
-          <span>Unlimited searches, forever</span>
-        </li>
-      </ul>
-
-      <a href="/create-checkout" class="cta-btn">
-        Pay $1.99 — Get Lifetime Access
-      </a>
-
-      <p class="secure-note">
-        <svg viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="8" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>
-        Secure payment via Stripe · No recurring charges
-      </p>
-
-      <div class="error-msg" id="errorMsg" style="display:none"></div>
-      <script>
-        const e = new URLSearchParams(location.search).get('error');
-        if (e) { const d = document.getElementById('errorMsg'); d.textContent = e; d.style.display = 'block'; }
-      </script>
+      <!-- CTA -->
+      <div class="cta-section">
+        <div class="price-tag">
+          <span class="dollar">$</span>
+          <span class="amount">1.99</span>
+          <span class="note">one-time · lifetime access</span>
+        </div>
+        <a href="/create-checkout" class="cta-btn">🍊 Unlock Premium — $1.99</a>
+        <p class="secure-note">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="8" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>
+          Secure payment via Stripe · No recurring charges
+        </p>
+        <div class="error-box" id="errorBox"></div>
+      </div>
 
       <div class="divider"></div>
 
-      <p class="social-proof">Built for <strong>SU students</strong> who want to pick the right professor before registering.</p>
+      <p class="social-proof">Built by an SU student, for <strong>SU students</strong>.<br>Pick the right professor before you register. 🍊</p>
 
     </div>
   </main>
+
+  <script>
+    const e = new URLSearchParams(location.search).get('error');
+    if (e) { const d = document.getElementById('errorBox'); d.textContent = e; d.style.display = 'block'; }
+  </script>
 
 </body>
 </html>
