@@ -248,6 +248,45 @@ def index_status():
     return jsonify({"cached": rmp.is_cache_fresh(school_id)})
 
 
+@app.route("/api/suggest")
+@limiter.limit("120 per minute")
+def suggest():
+    q         = request.args.get("q", "").strip()
+    school_id = request.args.get("school_id", "").strip() or None
+    if not q or len(q) < 2:
+        return jsonify({"results": []})
+    try:
+        return jsonify({"results": rmp.suggest_professors(q, school_id)})
+    except Exception:
+        return jsonify({"results": []})
+
+
+@app.route("/api/departments")
+def departments():
+    school_id = request.args.get("school_id", "").strip() or None
+    try:
+        return jsonify({"departments": rmp.get_department_list(school_id)})
+    except Exception:
+        return jsonify({"departments": []})
+
+
+@app.route("/api/department")
+@limiter.limit("30 per minute")
+def department_search():
+    dept      = request.args.get("dept", "").strip()
+    school_id = request.args.get("school_id", "").strip() or None
+    if not dept:
+        return jsonify({"error": "Missing dept"}), 400
+    premium = _is_premium(request)
+    try:
+        results = rmp.search_by_department(dept, school_id)
+        if not premium:
+            return jsonify({"results": results[:5], "truncated": len(results) > 5, "total": len(results)})
+        return jsonify({"results": results, "truncated": False, "total": len(results)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 # ── Premium routes ────────────────────────────────────────────────────────────
 
 @app.route("/api/trending")

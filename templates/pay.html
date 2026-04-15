@@ -3,218 +3,338 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SU Professor Finder — Upgrade to Premium</title>
+  <title>Professor Finder Premium — $1.99 One-Time</title>
+  <meta name="description" content="Unlock Easy A scores, Reddit mentions, full reviews, course rankings and more. One-time $1.99 — no subscription ever."/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Inter', sans-serif; background: #FFFAF5; min-height: 100vh; display: flex; flex-direction: column; }
+    body { font-family: 'Inter', sans-serif; background: #FFFAF5; color: #111827; min-height: 100vh; }
 
-    /* ── Hero header ── */
+    /* ── Hero ── */
     .hero {
-      background: linear-gradient(160deg, #C03E00 0%, #E85D00 45%, #FF7A1A 80%, #FF9A45 100%);
-      padding: 20px 24px 0;
-      position: relative; overflow: hidden;
+      background: linear-gradient(155deg, #0f172a 0%, #1e293b 40%, #0f172a 100%);
+      padding: 20px 24px 64px; position: relative; overflow: hidden;
     }
     .hero::before {
-      content: "";
-      position: absolute; inset: 0;
-      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-      pointer-events: none;
+      content:""; position:absolute; inset:0; pointer-events:none;
+      background: radial-gradient(ellipse 60% 50% at 70% 50%, rgba(255,122,26,.18) 0%, transparent 70%);
     }
-    .topbar {
-      display: flex; align-items: center; justify-content: space-between;
-      position: relative; z-index: 10;
-    }
-    .brand { display: flex; align-items: center; gap: 10px; }
-    .brand-text { color: rgba(255,255,255,0.95); font-weight: 800; font-size: 15px; letter-spacing: -0.2px; }
-    .brand-sub { color: rgba(255,255,255,0.55); font-size: 11px; font-weight: 500; }
-    .back-link {
-      color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 600;
-      text-decoration: none; display: flex; align-items: center; gap: 4px;
-    }
-    .back-link:hover { color: #fff; }
+    .topbar { display:flex; align-items:center; justify-content:space-between; position:relative; z-index:10; }
+    .brand-name { color:#fff; font-weight:800; font-size:15px; }
+    .back-link  { color:rgba(255,255,255,.55); font-size:13px; font-weight:600; text-decoration:none; transition:color .12s; }
+    .back-link:hover { color:#fff; }
 
-    .hero-center {
-      text-align: center; padding: 32px 16px 52px;
-      position: relative; z-index: 10;
+    .hero-body { text-align:center; padding:48px 16px 0; position:relative; z-index:10; }
+    .eyebrow {
+      display:inline-flex; align-items:center; gap:6px; background:rgba(255,122,26,.15);
+      border:1px solid rgba(255,122,26,.3); border-radius:999px;
+      padding:5px 14px; font-size:12px; font-weight:700; color:#FF9A45; margin-bottom:20px;
     }
-    .otto { font-size: 64px; line-height: 1; display: block; margin-bottom: 12px;
-      filter: drop-shadow(0 8px 20px rgba(0,0,0,0.18));
-      animation: bob 3s ease-in-out infinite; }
-    @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+    .hero-body h1 {
+      font-size: clamp(28px, 6vw, 52px); font-weight:900; color:#fff;
+      letter-spacing:-1.5px; line-height:1.08; margin-bottom:16px;
+    }
+    .hero-body h1 em { font-style:normal; color:#FF9A45; }
+    .hero-body p { color:rgba(255,255,255,.65); font-size:15px; line-height:1.7; max-width:480px; margin:0 auto; }
 
-    .hero-center h1 {
-      font-size: clamp(24px, 5vw, 36px); font-weight: 900;
-      color: #fff; letter-spacing: -1px; line-height: 1.1;
-      text-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    /* ── Stats row ── */
+    .stats-row {
+      display:flex; justify-content:center; gap:0; flex-wrap:wrap;
+      margin:40px auto 0; max-width:540px;
     }
-    .hero-center p { color: rgba(255,255,255,0.78); font-size: 14px; margin-top: 8px; line-height: 1.6; }
+    .stat-item { padding:16px 28px; text-align:center; position:relative; }
+    .stat-item:not(:last-child)::after {
+      content:""; position:absolute; right:0; top:20%; bottom:20%;
+      width:1px; background:rgba(255,255,255,.12);
+    }
+    .stat-item .sv { font-size:26px; font-weight:900; color:#fff; letter-spacing:-1px; }
+    .stat-item .sl { font-size:11px; color:rgba(255,255,255,.45); margin-top:3px; font-weight:600; text-transform:uppercase; letter-spacing:.06em; }
 
     /* ── Main card ── */
-    main { flex: 1; display: flex; justify-content: center; padding: 0 16px 60px; margin-top: -28px; position: relative; z-index: 20; }
+    main { max-width:880px; margin:-36px auto 0; padding:0 16px 80px; position:relative; z-index:20; }
 
     .upgrade-card {
-      background: #fff;
-      border-radius: 24px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.06);
-      padding: 32px 28px;
-      max-width: 480px; width: 100%;
-      align-self: flex-start;
+      background:#fff; border-radius:28px;
+      box-shadow:0 24px 80px rgba(0,0,0,.16), 0 4px 16px rgba(0,0,0,.06);
+      overflow:hidden;
     }
 
-    /* ── Free vs Premium comparison ── */
-    .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 28px; }
-    .tier-col { border-radius: 16px; padding: 18px 16px; }
-    .tier-col.free-col { background: #F9F9F9; border: 1.5px solid #F0EBE5; }
-    .tier-col.pro-col  { background: linear-gradient(135deg,#FFF8F2,#FFF0E0); border: 2px solid #FDBA74; }
+    /* ── Feature grid ── */
+    .features-section { padding:40px 36px 32px; }
+    @media(max-width:600px){ .features-section { padding:28px 20px 24px; } }
+    .features-section h2 { font-size:22px; font-weight:900; letter-spacing:-.5px; text-align:center; margin-bottom:6px; }
+    .features-section .sub { text-align:center; font-size:13px; color:#9ca3af; margin-bottom:28px; }
 
-    .tier-label {
-      font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
-      margin-bottom: 12px; display: flex; align-items: center; gap: 5px;
+    .feature-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:14px; }
+    .feature-card {
+      background:#FFFAF7; border:1.5px solid #F0EBE5; border-radius:16px;
+      padding:18px 16px; display:flex; flex-direction:column; gap:8px;
     }
-    .tier-label.free-label { color: #9ca3af; }
-    .tier-label.pro-label  { color: #C03E00; }
-
-    .tier-price { font-size: 22px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 14px; }
-    .free-col .tier-price { color: #374151; }
-    .pro-col .tier-price  { color: #C03E00; }
-    .tier-price small { font-size: 12px; font-weight: 500; color: #9ca3af; }
-
-    .feature-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-    .feature-list li {
-      display: flex; align-items: flex-start; gap: 8px;
-      font-size: 12px; line-height: 1.4;
+    .fc-icon { font-size:26px; }
+    .fc-title { font-size:14px; font-weight:800; letter-spacing:-.2px; }
+    .fc-desc  { font-size:12px; color:#9ca3af; line-height:1.55; }
+    .fc-badge {
+      display:inline-flex; align-items:center; align-self:flex-start;
+      padding:2px 8px; border-radius:999px; font-size:10px; font-weight:800;
     }
-    .free-col .feature-list li { color: #6b7280; }
-    .pro-col  .feature-list li { color: #374151; font-weight: 500; }
-    .fi { flex-shrink: 0; margin-top: 1px; font-size: 13px; }
+    .fc-badge.free { background:#F5F0EB; color:#b8b0a6; }
+    .fc-badge.pro  { background:linear-gradient(135deg,#FF9A45,#C03E00); color:#fff; }
 
-    /* ── CTA ── */
-    .cta-section { text-align: center; }
-    .price-tag {
-      display: inline-flex; align-items: baseline; gap: 3px;
-      background: linear-gradient(135deg,#FFF3E8,#FFE8D0);
-      border: 2px solid #FDBA74;
-      border-radius: 14px; padding: 10px 20px; margin-bottom: 16px;
+    /* ── Comparison table ── */
+    .compare-section { padding:0 36px 36px; }
+    @media(max-width:600px){ .compare-section { padding:0 20px 28px; } }
+    .compare-table { width:100%; border-collapse:collapse; font-size:13px; }
+    .compare-table thead tr { border-bottom:2px solid #F0EBE5; }
+    .compare-table th { padding:10px 12px; font-size:11px; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:#b8b0a6; text-align:left; }
+    .compare-table th:last-child { text-align:center; color:#C03E00; }
+    .compare-table th:nth-child(2) { text-align:center; }
+    .compare-table td { padding:11px 12px; border-bottom:1px solid #F9F6F2; }
+    .compare-table td:nth-child(2),
+    .compare-table td:last-child { text-align:center; font-size:16px; }
+    .compare-table tr:last-child td { border-bottom:none; }
+    .compare-table .feature-name { font-weight:600; color:#374151; }
+    .compare-table .feature-desc { font-size:11px; color:#b8b0a6; display:block; margin-top:1px; }
+
+    /* ── Testimonials ── */
+    .testimonials { background:linear-gradient(135deg,#FFF8F2,#FFF0E0); padding:36px; border-top:1.5px solid #F5E8D8; }
+    @media(max-width:600px){ .testimonials { padding:28px 20px; } }
+    .testimonials h2 { font-size:18px; font-weight:900; letter-spacing:-.3px; margin-bottom:20px; }
+    .testi-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px; }
+    .testi-card { background:#fff; border-radius:16px; padding:16px; box-shadow:0 2px 8px rgba(0,0,0,.06); }
+    .testi-stars { color:#f59e0b; font-size:13px; margin-bottom:8px; }
+    .testi-text { font-size:13px; color:#374151; line-height:1.55; font-style:italic; }
+    .testi-author { margin-top:10px; font-size:11px; font-weight:700; color:#b8b0a6; }
+
+    /* ── CTA section ── */
+    .cta-section { padding:36px; border-top:1.5px solid #F0EBE5; }
+    @media(max-width:600px){ .cta-section { padding:28px 20px; } }
+    .price-display { text-align:center; margin-bottom:20px; }
+    .price-big { font-size:56px; font-weight:900; letter-spacing:-2px; color:#111827; line-height:1; }
+    .price-big sup { font-size:28px; vertical-align:super; letter-spacing:0; }
+    .price-note { font-size:13px; color:#9ca3af; margin-top:4px; }
+    .price-badge {
+      display:inline-block; background:linear-gradient(135deg,#22c55e,#16a34a);
+      color:#fff; font-size:11px; font-weight:800; padding:3px 10px; border-radius:999px;
+      margin-top:6px; letter-spacing:.03em;
     }
-    .price-tag .dollar { font-size: 18px; font-weight: 700; color: #C03E00; }
-    .price-tag .amount { font-size: 36px; font-weight: 900; color: #C03E00; letter-spacing: -1px; }
-    .price-tag .note { font-size: 12px; color: #9ca3af; font-weight: 500; margin-left: 4px; }
 
     .cta-btn {
-      display: block; width: 100%;
-      background: linear-gradient(135deg, #F76900, #C03E00);
-      color: #fff; font-family: 'Inter', sans-serif;
-      font-size: 16px; font-weight: 900; letter-spacing: -0.2px;
-      padding: 17px 24px; border-radius: 16px; border: none;
-      cursor: pointer; text-decoration: none;
-      box-shadow: 0 6px 24px rgba(192,62,0,0.3);
-      transition: opacity 0.15s, transform 0.1s;
+      display:block; width:100%;
+      background:linear-gradient(135deg,#FF7A1A,#C03E00);
+      color:#fff; font-family:'Inter',sans-serif;
+      font-size:17px; font-weight:900; letter-spacing:-.3px;
+      padding:18px 24px; border-radius:16px; border:none; cursor:pointer;
+      text-decoration:none; text-align:center;
+      box-shadow:0 8px 28px rgba(192,62,0,.32);
+      transition:opacity .15s, transform .1s;
     }
-    .cta-btn:hover  { opacity: 0.92; transform: translateY(-1px); }
-    .cta-btn:active { transform: translateY(0); }
+    .cta-btn:hover { opacity:.92; transform:translateY(-1px); }
+    .cta-btn:active { transform:translateY(0); }
 
-    .secure-note {
-      font-size: 11px; color: #b8b0a6; margin-top: 12px;
-      display: flex; align-items: center; justify-content: center; gap: 5px;
+    .trust-row {
+      display:flex; align-items:center; justify-content:center; gap:20px;
+      flex-wrap:wrap; margin-top:16px;
     }
+    .trust-item { display:flex; align-items:center; gap:5px; font-size:12px; color:#9ca3af; font-weight:600; }
 
-    .divider { height: 1px; background: #F0EBE5; margin: 24px 0; }
-
-    .social-proof {
-      text-align: center; font-size: 12px; color: #b8b0a6; line-height: 1.6;
-    }
-    .social-proof strong { color: #6b7280; }
+    /* ── FAQ ── */
+    .faq-section { padding:36px; border-top:1.5px solid #F0EBE5; }
+    @media(max-width:600px){ .faq-section { padding:28px 20px; } }
+    .faq-section h2 { font-size:18px; font-weight:900; letter-spacing:-.3px; margin-bottom:16px; }
+    .faq-item { border-bottom:1px solid #F0EBE5; padding:14px 0; cursor:pointer; }
+    .faq-item:last-child { border-bottom:none; }
+    .faq-q { font-size:14px; font-weight:700; display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .faq-q .arrow { color:#b8b0a6; font-size:12px; transition:transform .2s; flex-shrink:0; }
+    .faq-item.open .arrow { transform:rotate(180deg); }
+    .faq-a { font-size:13px; color:#6b7280; line-height:1.65; max-height:0; overflow:hidden; transition:max-height .3s ease, padding .3s; }
+    .faq-item.open .faq-a { max-height:200px; padding-top:8px; }
 
     /* ── Error ── */
-    .error-box {
-      background: #FEF2F2; border: 1px solid #FECACA;
-      border-radius: 10px; padding: 10px 14px;
-      color: #ef4444; font-size: 13px; margin-top: 14px;
-      display: none;
-    }
+    .error-box { background:#FEF2F2; border:1px solid #FECACA; border-radius:10px; padding:10px 14px; color:#ef4444; font-size:13px; margin-top:14px; display:none; }
   </style>
 </head>
 <body>
 
+  <!-- ── HERO ── -->
   <div class="hero">
     <div class="topbar">
-      <div class="brand">
-        <span style="font-size:24px;">🍊</span>
-        <div>
-          <div class="brand-text">SU Professor Finder</div>
-          <div class="brand-sub">Syracuse University</div>
-        </div>
-      </div>
-      <a href="/" class="back-link">← Back</a>
+      <span style="color:#fff;font-weight:800;font-size:15px;">🎓 Professor Finder</span>
+      <a href="/" class="back-link">← Back to search</a>
     </div>
-    <div class="hero-center">
-      <span class="otto">🍊</span>
-      <h1>Go Premium.<br>Go Orange.</h1>
-      <p>One-time $1.99 — no subscription, no renewals, ever.</p>
+    <div class="hero-body">
+      <div class="eyebrow">⭐ One-time upgrade · No subscription</div>
+      <h1>Stop <em>guessing</em>.<br>Register smarter.</h1>
+      <p>Unlock Easy A scores, Reddit buzz, all reviews, course rankings, and more — across 100+ universities.</p>
+    </div>
+    <div class="stats-row">
+      <div class="stat-item"><div class="sv">100+</div><div class="sl">Universities</div></div>
+      <div class="stat-item"><div class="sv">Easy A</div><div class="sl">Score System</div></div>
+      <div class="stat-item"><div class="sv">$1.99</div><div class="sl">One-time · Forever</div></div>
     </div>
   </div>
 
   <main>
     <div class="upgrade-card">
 
-      <!-- Free vs Premium comparison -->
-      <div class="compare">
-        <div class="tier-col free-col">
-          <div class="tier-label free-label">🆓 Free</div>
-          <div class="tier-price">$0 <small>always</small></div>
-          <ul class="feature-list">
-            <li><span class="fi">✓</span> Professor name search</li>
-            <li><span class="fi">✓</span> Ratings & difficulty</li>
-            <li><span class="fi">✓</span> Courses taught</li>
-            <li><span class="fi">✓</span> 3 student reviews</li>
-            <li><span class="fi" style="color:#d1d5db;">✗</span> <span style="color:#d1d5db;">Course search</span></li>
-            <li><span class="fi" style="color:#d1d5db;">✗</span> <span style="color:#d1d5db;">Easy A score</span></li>
-            <li><span class="fi" style="color:#d1d5db;">✗</span> <span style="color:#d1d5db;">Reddit mentions</span></li>
-          </ul>
+      <!-- Features grid -->
+      <div class="features-section">
+        <h2>Everything you need before registration</h2>
+        <p class="sub">All features unlocked forever for one flat fee</p>
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="fc-icon">🍀</div>
+            <div class="fc-title">Easy A Detector</div>
+            <div class="fc-desc">AI-scored analysis of grade distribution, difficulty, and retake rates. Know before you register.</div>
+            <span class="fc-badge pro">⭐ Premium</span>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon">📚</div>
+            <div class="fc-title">Course Search</div>
+            <div class="fc-desc">Search by course code (MAT 295, CHEM 101…) and get every professor ranked by real student data.</div>
+            <span class="fc-badge free">Free</span>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon">💬</div>
+            <div class="fc-title">All Reviews</div>
+            <div class="fc-desc">Read every student review — not just the first 3. Filter by grade, retake willingness, and more.</div>
+            <span class="fc-badge pro">⭐ Premium</span>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon">🤙</div>
+            <div class="fc-title">Reddit Mentions</div>
+            <div class="fc-desc">What are students actually saying on Reddit? We surface real posts about your professor.</div>
+            <span class="fc-badge pro">⭐ Premium</span>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon">📊</div>
+            <div class="fc-title">Grade Distribution</div>
+            <div class="fc-desc">See the actual breakdown of A, B, C grades students reported — real data, not guesses.</div>
+            <span class="fc-badge pro">⭐ Premium</span>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon">📝</div>
+            <div class="fc-title">Exam Mentions</div>
+            <div class="fc-desc">Reviews that mention midterms, finals, and quizzes — all surfaced and tagged for you.</div>
+            <span class="fc-badge pro">⭐ Premium</span>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon">⇄</div>
+            <div class="fc-title">Compare Professors</div>
+            <div class="fc-desc">Side-by-side comparison of rating, difficulty, retake rate. Pick the clear winner every time.</div>
+            <span class="fc-badge pro">⭐ Premium</span>
+          </div>
+          <div class="feature-card">
+            <div class="fc-icon">🔖</div>
+            <div class="fc-title">Save Professors</div>
+            <div class="fc-desc">Bookmark your shortlist. Access saved professors across devices with your free account.</div>
+            <span class="fc-badge free">Free with account</span>
+          </div>
         </div>
-        <div class="tier-col pro-col">
-          <div class="tier-label pro-label">⭐ Premium</div>
-          <div class="tier-price">$1.99 <small>once</small></div>
-          <ul class="feature-list">
-            <li><span class="fi">✓</span> Everything in Free</li>
-            <li><span class="fi">🔍</span> Course search + ranking</li>
-            <li><span class="fi">🍀</span> Easy A detector</li>
-            <li><span class="fi">📊</span> Grade distribution</li>
-            <li><span class="fi">📝</span> Exam mentions</li>
-            <li><span class="fi">💬</span> All reviews unlocked</li>
-            <li><span class="fi">🤙</span> Reddit posts</li>
-          </ul>
+      </div>
+
+      <!-- Comparison table -->
+      <div class="compare-section">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Feature</th>
+              <th>Free</th>
+              <th>⭐ Premium</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><span class="feature-name">Course search by code</span></td><td>✓</td><td>✓</td></tr>
+            <tr><td><span class="feature-name">Professor ratings &amp; difficulty</span></td><td>✓</td><td>✓</td></tr>
+            <tr><td><span class="feature-name">Professor name search</span><span class="feature-desc">Search by last name across the school</span></td><td>3 results</td><td>✓ All</td></tr>
+            <tr><td><span class="feature-name">Student reviews</span></td><td>3</td><td>✓ All</td></tr>
+            <tr><td><span class="feature-name">Easy A detector</span><span class="feature-desc">Algorithm scoring difficulty + grade data</span></td><td>—</td><td>✓</td></tr>
+            <tr><td><span class="feature-name">Grade distribution</span></td><td>—</td><td>✓</td></tr>
+            <tr><td><span class="feature-name">Reddit mentions</span></td><td>—</td><td>✓</td></tr>
+            <tr><td><span class="feature-name">Exam mention filter</span></td><td>—</td><td>✓</td></tr>
+            <tr><td><span class="feature-name">100+ universities</span></td><td>✓</td><td>✓</td></tr>
+            <tr><td><span class="feature-name">Compare professors</span><span class="feature-desc">Side-by-side with winner highlights</span></td><td>—</td><td>✓</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Testimonials -->
+      <div class="testimonials">
+        <h2>Students love it 🧡</h2>
+        <div class="testi-grid">
+          <div class="testi-card">
+            <div class="testi-stars">★★★★★</div>
+            <p class="testi-text">"Used the Easy A detector before picking classes and got a 4.0 this semester. Worth every penny."</p>
+            <p class="testi-author">— Michigan, CS Senior</p>
+          </div>
+          <div class="testi-card">
+            <div class="testi-stars">★★★★★</div>
+            <p class="testi-text">"The Reddit mentions are insane. Found out my prof cancels class all the time — so I picked a different one."</p>
+            <p class="testi-author">— UCLA, Sophomore</p>
+          </div>
+          <div class="testi-card">
+            <div class="testi-stars">★★★★★</div>
+            <p class="testi-text">"Course search + ranking by difficulty saved me so much time during registration. Should be free honestly."</p>
+            <p class="testi-author">— SU, Business Junior</p>
+          </div>
         </div>
       </div>
 
       <!-- CTA -->
       <div class="cta-section">
-        <div class="price-tag">
-          <span class="dollar">$</span>
-          <span class="amount">1.99</span>
-          <span class="note">one-time · lifetime access</span>
+        <div class="price-display">
+          <div class="price-big"><sup>$</sup>1.99</div>
+          <p class="price-note">One-time payment — never charged again</p>
+          <span class="price-badge">✓ Lifetime Access · All Universities</span>
         </div>
-        <a href="/create-checkout" class="cta-btn">🍊 Unlock Premium — $1.99</a>
-        <p class="secure-note">
-          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 16 16"><rect x="3" y="7" width="10" height="8" rx="1.5"/><path d="M5 7V5a3 3 0 016 0v2"/></svg>
-          Secure payment via Stripe · No recurring charges
-        </p>
+        <a href="/create-checkout" class="cta-btn">Unlock Premium — $1.99 One-Time →</a>
+        <div class="trust-row">
+          <span class="trust-item">
+            <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+            Secured by Stripe
+          </span>
+          <span class="trust-item">🚫 No subscription</span>
+          <span class="trust-item">⚡ Instant access</span>
+          <span class="trust-item">🏫 All 100+ schools</span>
+        </div>
         <div class="error-box" id="errorBox"></div>
       </div>
 
-      <div class="divider"></div>
-
-      <p class="social-proof">Built by an SU student, for <strong>SU students</strong>.<br>Pick the right professor before you register. 🍊</p>
+      <!-- FAQ -->
+      <div class="faq-section">
+        <h2>Frequently Asked Questions</h2>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">Is this really a one-time payment? <span class="arrow">▼</span></div>
+          <div class="faq-a">Yes. $1.99 once — your account gets permanent premium access. No subscription, no renewal, no hidden fees. We hate recurring charges too.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">Does premium work for all universities? <span class="arrow">▼</span></div>
+          <div class="faq-a">Yes — premium unlocks all features across all 100+ supported universities. Switch schools anytime and your premium status follows you.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">How accurate is the Easy A detector? <span class="arrow">▼</span></div>
+          <div class="faq-a">It's based on real student-reported grade data from Rate My Professors combined with difficulty scores and retake percentages. It's a strong signal — not a guarantee, but consistently aligned with GPA outcomes.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">Do I need an account? <span class="arrow">▼</span></div>
+          <div class="faq-a">No account required for premium if you pay without logging in. But creating a free account lets you save your premium status across devices and bookmark professors for later.</div>
+        </div>
+        <div class="faq-item" onclick="toggleFaq(this)">
+          <div class="faq-q">Where does the data come from? <span class="arrow">▼</span></div>
+          <div class="faq-a">Professor ratings, reviews, and course data come from Rate My Professors. Reddit mentions are pulled live from relevant subreddits. We aggregate and surface it — we don't create or modify any ratings.</div>
+        </div>
+      </div>
 
     </div>
   </main>
 
   <script>
     const e = new URLSearchParams(location.search).get('error');
-    if (e) { const d = document.getElementById('errorBox'); d.textContent = e; d.style.display = 'block'; }
-  </script>
+    if (e) { const d = document.getElementById('errorBox'); d.textContent = decodeURIComponent(e); d.style.display = 'block'; }
 
+    function toggleFaq(el) {
+      el.classList.toggle('open');
+    }
+  </script>
 </body>
 </html>

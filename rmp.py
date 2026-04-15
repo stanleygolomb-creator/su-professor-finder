@@ -364,3 +364,62 @@ def build_rmp_url(professor_id: str) -> str:
         return f"https://www.ratemyprofessors.com/professor/{base64.b64decode(professor_id).decode().split('-')[-1]}"
     except Exception:
         return "https://www.ratemyprofessors.com"
+
+
+def suggest_professors(query: str, school_id: str = None, limit: int = 8) -> list:
+    """
+    Fast autocomplete from the cached index — no live RMP call.
+    Returns professors whose last name or full name starts with the query.
+    """
+    if not school_id:
+        try:
+            school_id = get_su_school_id()
+        except Exception:
+            return []
+    profs, age = _load_cache(school_id)
+    if not profs or age > _STALE_SERVE_TTL:
+        return []
+    q = re.sub(r"\s+", " ", query.lower().strip())
+    results = []
+    for p in profs.values():
+        first = (p.get("firstName") or "").lower()
+        last  = (p.get("lastName")  or "").lower()
+        full  = f"{first} {last}"
+        if last.startswith(q) or full.startswith(q) or f"{last}, {first}".startswith(q):
+            results.append(p)
+    # Last-name prefix matches first, then by rating desc
+    results.sort(key=lambda p: (
+        not (p.get("lastName") or "").lower().startswith(q),
+        -(p.get("avgRating") or 0),
+    ))
+    return results[:limit]
+
+
+def get_department_list(school_id: str = None) -> list:
+    """Return sorted list of unique departments from cached index."""
+    if not school_id:
+        try:
+            school_id = get_su_school_id()
+        except Exception:
+            return []
+    profs, age = _load_cache(school_id)
+    if not profs or age > _STALE_SERVE_TTL:
+        return []
+    depts = sorted({p.get("department") for p in profs.values() if p.get("department")})
+    return depts
+
+
+def search_by_department(department: str, school_id: str = None) -> list:
+    """Return all professors in a department, sorted by rank score."""
+    if not school_id:
+        try:
+            school_id = get_su_school_id()
+        except Exception:
+            return []
+    profs = build_professor_index(school_id)
+    q = department.lower().strip()
+    matched = [p for p in profs.values() if q in (p.get("department") or "").lower()]
+    for p in matched:
+        p["rankScore"] = _rank_score(p)
+    matched.sort(key=lambda p: p["rankScore"], reverse=True)
+    return matched

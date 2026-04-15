@@ -1,0 +1,19 @@
+{
+  "name": "Professor Finder",
+  "short_name": "ProfFinder",
+  "description": "Find the best professors at your school before you register.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFAF5",
+  "theme_color": "#C03E00",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='40' fill='%23C03E00'/%3E%3Ctext x='96' y='130' font-size='110' text-anchor='middle'%3E🎓%3C/text%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["education", "utilities"],
+  "screenshots": []
+}

@@ -3,7 +3,18 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Professor Finder</title>
+  <title>Professor Finder — Find the Best Professors at Your School</title>
+  <meta name="description" content="Search professor ratings, Easy A scores, Reddit mentions, and course rankings at 100+ universities. Free course search, $1.99 premium."/>
+  <meta name="theme-color" content="#C03E00"/>
+  <meta property="og:title"       content="Professor Finder — Register Smarter"/>
+  <meta property="og:description" content="Easy A detector, Reddit mentions, full reviews & course search at 100+ universities."/>
+  <meta property="og:type"        content="website"/>
+  <meta property="og:url"         content="https://su-professor-finder.onrender.com"/>
+  <meta property="og:image"       content="https://su-professor-finder.onrender.com/static/og.png"/>
+  <meta name="twitter:card"       content="summary_large_image"/>
+  <meta name="twitter:title"      content="Professor Finder — Register Smarter"/>
+  <meta name="twitter:description" content="Find Easy A professors at your school before you register."/>
+  <link rel="manifest" href="/static/manifest.json"/>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
@@ -221,6 +232,27 @@
     .user-menu-item:hover { background: #F5F0EB; }
     .user-menu-item.danger { color: #ef4444; }
     .user-menu-item.danger:hover { background: #FEF2F2; }
+
+    /* ── Autocomplete ── */
+    .ac-wrap { position: relative; flex: 1; }
+    .ac-dropdown {
+      position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+      background: #fff; border-radius: 14px; border: 1.5px solid #F0EBE5;
+      box-shadow: 0 8px 32px rgba(0,0,0,.12); z-index: 200; overflow: hidden;
+      max-height: 280px; overflow-y: auto;
+    }
+    .ac-item {
+      display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+      cursor: pointer; transition: background .1s;
+    }
+    .ac-item:hover, .ac-item.active { background: #FFFAF7; }
+    .ac-rating {
+      width: 36px; height: 36px; border-radius: 10px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 900; font-size: 13px; color: #fff;
+    }
+    .ac-name { font-size: 13px; font-weight: 700; }
+    .ac-dept { font-size: 11px; color: #b8b0a6; margin-top: 1px; }
 
     /* ── Skeleton loaders ── */
     @keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
@@ -723,7 +755,13 @@ function renderProfPanel() {
     return;
   }
   el.innerHTML = `<div class="search-row">
-    <input id="searchInput" type="text" placeholder="Search by last name…" onkeydown="if(event.key==='Enter')doSearch()"/>
+    <div class="ac-wrap">
+      <input id="searchInput" type="text" placeholder="Search by professor name…"
+        onkeydown="handleSearchKey(event)"
+        oninput="onSearchInput(this.value)"
+        autocomplete="off"/>
+      <div class="ac-dropdown hidden" id="acDropdown"></div>
+    </div>
     <button class="search-btn" onclick="doSearch()">Search</button>
   </div>
   <p class="hint">⭐ Premium · <span id="searchSchoolHint">${esc(SCHOOL.name)}</span></p>`;
@@ -852,10 +890,40 @@ async function doCourseSearch() {
   } catch(e){showError("Network error.");}
 }
 
+let _allCourseResults = [];
+let _courseQuery = "";
+
 function renderCourseResults(profs, q) {
-  const el=document.getElementById("searchResults");
-  if(!profs.length){el.innerHTML=`<div class="card" style="padding:32px;text-align:center;color:#9ca3af;">No professors found for <strong>${esc(q)}</strong>.</div>`;el.classList.remove("hidden");return;}
-  el.innerHTML=`<div style="margin-bottom:12px;"><p style="font-weight:800;font-size:16px;">Professors for <span style="color:var(--p1);">${esc(q)}</span></p><p style="font-size:11px;color:#b8b0a6;margin-top:2px;">Ranked by rating · ease · retake rate</p></div><div class="result-list">${profs.map((p,i)=>courseCard(p,i)).join("")}</div>`;
+  _allCourseResults = profs;
+  _courseQuery = q;
+  _renderFilteredCourse();
+}
+
+function _renderFilteredCourse() {
+  const el = document.getElementById("searchResults");
+  if (!_allCourseResults.length) {
+    el.innerHTML = `<div class="card" style="padding:32px;text-align:center;color:#9ca3af;">No professors found for <strong>${esc(_courseQuery)}</strong>. Try a shorter course code.</div>`;
+    el.classList.remove("hidden"); return;
+  }
+  const sort = document.getElementById("courseSortSelect")?.value || "score";
+  let profs = [..._allCourseResults];
+  if (sort === "rating") profs.sort((a,b)=>(b.avgRating||0)-(a.avgRating||0));
+  else if (sort === "easy") profs.sort((a,b)=>(a.avgDifficulty||5)-(b.avgDifficulty||5));
+  else if (sort === "retake") profs.sort((a,b)=>(b.wouldTakeAgainPercent||0)-(a.wouldTakeAgainPercent||0));
+  else profs.sort((a,b)=>(b.rankScore||0)-(a.rankScore||0));
+  el.innerHTML = `
+    <div class="filter-bar fade-in">
+      <span class="fb-label">Sort</span>
+      <select class="filter-select" id="courseSortSelect" onchange="_renderFilteredCourse()">
+        <option value="score"  ${sort==="score"?"selected":""}>🏆 Best Overall</option>
+        <option value="rating" ${sort==="rating"?"selected":""}>⭐ Highest Rated</option>
+        <option value="easy"   ${sort==="easy"?"selected":""}>🍃 Easiest</option>
+        <option value="retake" ${sort==="retake"?"selected":""}>🔁 Most Retake</option>
+      </select>
+      <span style="font-weight:800;font-size:14px;color:var(--p1);margin-left:auto;">${esc(_courseQuery)}</span>
+      <span class="filter-count">${profs.length} prof${profs.length!==1?"s":""}</span>
+    </div>
+    <div class="result-list">${profs.map((p,i)=>courseCard(p,i)).join("")}</div>`;
   el.classList.remove("hidden");
 }
 
@@ -1410,17 +1478,24 @@ async function loadTrending() {
   if (activeTab !== "professor") { el.innerHTML=""; return; }
   const sid = SCHOOL.id || "";
   try {
-    const res  = await fetch(`/api/trending?school_id=${encodeURIComponent(sid)}`);
-    const data = await res.json();
-    const list = data.trending || [];
-    if (!list.length) { el.innerHTML=""; return; }
-    const medals = ["🥇","🥈","🥉"];
-    el.innerHTML = `
-      <div class="section-head">
+    const [trendRes, deptRes] = await Promise.all([
+      fetch(`/api/trending?school_id=${encodeURIComponent(sid)}`),
+      fetch(`/api/departments?school_id=${encodeURIComponent(sid)}`),
+    ]);
+    const trendData = await trendRes.json();
+    const deptData  = await deptRes.json();
+    const list  = trendData.trending || [];
+    const depts = (deptData.departments || []).slice(0, 12);
+
+    let html = "";
+
+    if (list.length) {
+      const medals = ["🥇","🥈","🥉"];
+      html += `<div class="section-head">
         <h3>🔥 Trending at ${esc(SCHOOL.abbr||SCHOOL.name)}</h3>
         <span style="font-size:11px;color:#b8b0a6;">Last 14 days</span>
       </div>
-      <div class="trending-list">
+      <div class="trending-list" style="margin-bottom:20px;">
         ${list.map((p,i)=>`
           <div class="trending-item" onclick="loadProfessor('${esc(p.prof_id)}','${esc(p.name)}')">
             <span class="trending-rank">${i<3?medals[i]:`<span style="font-weight:800;color:#d1d5db;">#${i+1}</span>`}</span>
@@ -1432,6 +1507,18 @@ async function loadTrending() {
             <span class="trending-fire">🔥 ${p.views}</span>
           </div>`).join("")}
       </div>`;
+    }
+
+    if (depts.length) {
+      html += `<div class="section-head" style="margin-bottom:8px;">
+        <h3 style="font-size:12px;color:#b8b0a6;letter-spacing:.04em;text-transform:uppercase;">Browse by Department</h3>
+      </div>
+      <div class="recent-scroll" style="margin-bottom:4px;">
+        ${depts.map(d=>`<div class="recent-chip" onclick="setTab('professor');browseDepartment('${esc(d)}')">${esc(d)}</div>`).join("")}
+      </div>`;
+    }
+
+    el.innerHTML = html || "";
   } catch(_) { el.innerHTML = ""; }
 }
 
@@ -1456,6 +1543,79 @@ function showToast(msg) {
   t.classList.add("show");
   clearTimeout(_toastTimer);
   _toastTimer = setTimeout(()=>t.classList.remove("show"), 2800);
+}
+
+// ── Autocomplete ──────────────────────────────────────────────────────────
+let _acTimer = null;
+let _acIndex = -1;
+let _acItems = [];
+
+function onSearchInput(val) {
+  clearTimeout(_acTimer);
+  const dd = document.getElementById("acDropdown");
+  if (!dd) return;
+  if (!val || val.length < 2) { dd.classList.add("hidden"); return; }
+  _acTimer = setTimeout(async () => {
+    const sid = SCHOOL.id || "";
+    try {
+      const res  = await fetch(`/api/suggest?q=${encodeURIComponent(val)}&school_id=${encodeURIComponent(sid)}`);
+      const data = await res.json();
+      _acItems = data.results || [];
+      if (!_acItems.length) { dd.classList.add("hidden"); return; }
+      _acIndex = -1;
+      dd.innerHTML = _acItems.map((p, i) => {
+        const name = `${p.firstName} ${p.lastName}`;
+        const bg = rGrad(p.avgRating);
+        const rating = p.avgRating != null ? p.avgRating.toFixed(1) : "?";
+        return `<div class="ac-item" data-i="${i}" onmousedown="selectSuggest(${i},'${esc(name)}')">
+          <div class="ac-rating" style="background:${bg};">${rating}</div>
+          <div><div class="ac-name">${esc(name)}</div><div class="ac-dept">${esc(p.department||"")}</div></div>
+        </div>`;
+      }).join("");
+      dd.classList.remove("hidden");
+    } catch(_) {}
+  }, 160);
+}
+
+function handleSearchKey(e) {
+  const dd = document.getElementById("acDropdown");
+  const items = dd?.querySelectorAll(".ac-item");
+  if (e.key === "Enter") { if (_acIndex >= 0 && _acItems[_acIndex]) { selectSuggest(_acIndex, `${_acItems[_acIndex].firstName} ${_acItems[_acIndex].lastName}`); } else { dd?.classList.add("hidden"); doSearch(); } return; }
+  if (e.key === "Escape") { dd?.classList.add("hidden"); return; }
+  if (!items?.length) return;
+  if (e.key === "ArrowDown") { e.preventDefault(); _acIndex = Math.min(_acIndex+1, items.length-1); }
+  else if (e.key === "ArrowUp") { e.preventDefault(); _acIndex = Math.max(_acIndex-1, -1); }
+  else return;
+  items.forEach((el,i) => el.classList.toggle("active", i===_acIndex));
+}
+
+function selectSuggest(i, name) {
+  const inp = document.getElementById("searchInput");
+  if (inp) inp.value = name;
+  document.getElementById("acDropdown")?.classList.add("hidden");
+  const p = _acItems[i];
+  if (p) loadProfessor(p.id, name);
+}
+
+document.addEventListener("click", e => {
+  if (!e.target.closest(".ac-wrap")) document.getElementById("acDropdown")?.classList.add("hidden");
+});
+
+// ── Department browser ────────────────────────────────────────────────────
+async function browseDepartment(dept) {
+  clearDetail();
+  if (!SCHOOL.id) { await resolveSchoolId(SCHOOL); }
+  const sid = SCHOOL.id || "";
+  showSkeleton("searchResults", 4);
+  document.getElementById("searchResults").classList.remove("hidden");
+  try {
+    const res  = await fetch(`/api/department?dept=${encodeURIComponent(dept)}&school_id=${encodeURIComponent(sid)}`);
+    const data = await res.json();
+    if (data.error) { showError(data.error); return; }
+    renderProfList(data.results, data.truncated, data.total);
+    // Scroll to results
+    document.getElementById("searchResults").scrollIntoView({behavior:"smooth",block:"start"});
+  } catch(_) { showError("Network error."); }
 }
 
 // ── Deep-link: ?prof=ID auto-load ────────────────────────────────────────
