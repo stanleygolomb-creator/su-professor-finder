@@ -1,275 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SU Professor Finder — Syracuse University</title>
+  <title>Professor Finder</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Inter', sans-serif; background: #FFFAF5; color: #111827; min-height: 100vh; }
-
-    /* ── Scrollbar ── */
     ::-webkit-scrollbar { width: 5px; }
     ::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 3px; }
 
     /* ── Hero ── */
     .hero {
-      background: linear-gradient(160deg, #C03E00 0%, #E85D00 40%, #FF7A1A 80%, #FF9A45 100%);
-      position: relative; overflow: hidden;
-      padding: 0 0 48px;
+      background: linear-gradient(160deg, #C03E00 0%, #E85D00 45%, #FF7A1A 80%, #FF9A45 100%);
+      padding: 0 0 52px; position: relative; overflow: hidden;
     }
     .hero::before {
-      content: "";
-      position: absolute; inset: 0;
-      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-      pointer-events: none;
+      content: ""; position: absolute; inset: 0; pointer-events: none;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Ccircle cx='30' cy='30' r='20' fill='%23ffffff' fill-opacity='0.04'/%3E%3C/g%3E%3C/svg%3E");
     }
+    .blob { position: absolute; border-radius: 50%; background: rgba(255,255,255,0.06); pointer-events: none; }
 
     /* ── Topbar ── */
-    .topbar {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 16px 24px 0;
-      position: relative; z-index: 10;
-    }
-    .topbar-brand { display: flex; align-items: center; gap: 10px; }
-    .topbar-brand span { color: rgba(255,255,255,0.95); font-weight: 800; font-size: 15px; letter-spacing: -0.2px; }
-    .topbar-brand small { display: block; color: rgba(255,255,255,0.6); font-size: 11px; font-weight: 500; }
-    .topbar-right { display: flex; align-items: center; gap: 8px; }
+    .topbar { display: flex; align-items: center; justify-content: space-between; padding: 18px 20px 0; position: relative; z-index: 10; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-name { color: #fff; font-weight: 800; font-size: 15px; letter-spacing: -0.2px; }
+    .brand-school { color: rgba(255,255,255,0.6); font-size: 11px; font-weight: 500; margin-top: 1px; }
+    .tier-btn { font-size: 11px; font-weight: 700; padding: 5px 12px; border-radius: 999px; text-decoration: none; transition: opacity .15s; }
+    .tier-free    { background: rgba(255,255,255,0.15); color: #fff; border: 1.5px solid rgba(255,255,255,0.3); }
+    .tier-premium { background: rgba(255,255,255,0.2); color: #fff; }
 
     /* ── Hero body ── */
-    .hero-body {
-      text-align: center; padding: 36px 24px 0;
-      position: relative; z-index: 10;
-    }
-    .otto { font-size: 72px; line-height: 1; margin-bottom: 12px; display: block;
-      filter: drop-shadow(0 8px 24px rgba(0,0,0,0.2));
-      animation: bob 3s ease-in-out infinite; }
-    @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-
-    .hero-body h1 {
-      font-size: clamp(28px, 6vw, 46px); font-weight: 900;
-      color: #fff; letter-spacing: -1.5px; line-height: 1.08;
-      text-shadow: 0 2px 16px rgba(0,0,0,0.18);
-    }
-    .hero-body h1 em { font-style: normal; color: rgba(255,255,255,0.75); }
-    .hero-body p {
-      color: rgba(255,255,255,0.82); font-size: 15px; font-weight: 500;
-      margin-top: 10px; line-height: 1.6;
-    }
-
-    /* ── Tier pill in hero ── */
-    .tier-pill {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 6px 14px; border-radius: 999px;
-      font-size: 12px; font-weight: 700; letter-spacing: 0.02em;
-      margin-bottom: 20px;
-    }
-    .tier-free    { background: rgba(255,255,255,0.15); color: rgba(255,255,255,0.9); border: 1.5px solid rgba(255,255,255,0.3); }
-    .tier-premium { background: rgba(255,255,255,0.22); color: #fff; border: 1.5px solid rgba(255,255,255,0.5); }
+    .hero-body { text-align: center; padding: 28px 20px 0; position: relative; z-index: 10; }
+    .otto { font-size: 60px; display: block; margin-bottom: 10px; filter: drop-shadow(0 6px 16px rgba(0,0,0,0.18)); animation: bob 3s ease-in-out infinite; }
+    @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+    .hero-body h1 { font-size: clamp(26px,5.5vw,42px); font-weight: 900; color: #fff; letter-spacing: -1px; line-height: 1.1; text-shadow: 0 2px 12px rgba(0,0,0,.15); }
+    .hero-body h1 em { font-style: normal; color: rgba(255,255,255,.7); }
+    .hero-body p { color: rgba(255,255,255,.78); font-size: 14px; margin-top: 8px; line-height: 1.6; }
 
     /* ── Search card ── */
     .search-card {
-      background: #fff;
-      border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.08);
-      padding: 6px;
-      max-width: 600px; width: calc(100% - 32px);
-      margin: 28px auto 0;
-      position: relative; z-index: 10;
+      background: #fff; border-radius: 22px;
+      box-shadow: 0 20px 60px rgba(0,0,0,.16), 0 4px 12px rgba(0,0,0,.07);
+      padding: 6px; max-width: 620px; width: calc(100% - 32px);
+      margin: 24px auto 0; position: relative; z-index: 10;
     }
 
     /* ── Tabs ── */
-    .tab-strip {
-      display: flex; background: #F5F0EB; border-radius: 14px;
-      padding: 4px; gap: 4px; margin-bottom: 10px;
-    }
+    .tab-strip { display: flex; background: #F5F0EB; border-radius: 14px; padding: 4px; gap: 3px; margin-bottom: 10px; }
     .tab-btn {
-      flex: 1; padding: 9px 12px; font-size: 13px; font-weight: 700;
-      border-radius: 11px; border: none; cursor: pointer; transition: all 0.18s;
+      flex: 1; padding: 8px 6px; font-size: 12px; font-weight: 700; letter-spacing: -0.1px;
+      border-radius: 11px; border: none; cursor: pointer; transition: all .18s;
       background: transparent; color: #9ca3af; font-family: 'Inter', sans-serif;
     }
-    .tab-btn.on { background: #fff; color: #C03E00; box-shadow: 0 1px 6px rgba(0,0,0,0.1); }
-    .tab-btn.on:hover { color: #C03E00; }
-    .tab-btn:hover { color: #6b7280; }
-    .pro-chip {
-      display: inline-block; background: linear-gradient(135deg,#F76900,#C03E00);
-      color: white; font-size: 9px; font-weight: 800; padding: 2px 6px;
-      border-radius: 999px; vertical-align: middle; margin-left: 4px; letter-spacing: 0.04em;
-    }
+    .tab-btn.on { background: #fff; color: #C03E00; box-shadow: 0 1px 6px rgba(0,0,0,.1); }
+    .tab-btn:not(.on):hover { color: #6b7280; }
+    .pro-chip { display: inline-block; background: linear-gradient(135deg,#F76900,#C03E00); color: #fff; font-size: 9px; font-weight: 800; padding: 2px 6px; border-radius: 999px; vertical-align: middle; margin-left: 3px; }
 
     /* ── Search inputs ── */
     .search-row { display: flex; gap: 8px; padding: 0 4px 4px; }
     .search-row input {
-      flex: 1; border: 2px solid #F0EBE5; border-radius: 12px;
-      padding: 11px 16px; font-size: 14px; font-family: 'Inter', sans-serif;
-      color: #111827; background: #FFFAF7; transition: border-color 0.15s;
-      outline: none;
+      flex: 1; border: 2px solid #F0EBE5; border-radius: 12px; padding: 11px 15px;
+      font-size: 14px; font-family: 'Inter', sans-serif; color: #111827; background: #FFFAF7;
+      transition: border-color .15s; outline: none;
     }
     .search-row input:focus { border-color: #F76900; background: #fff; }
     .search-row input::placeholder { color: #c4b8ad; }
     .search-btn {
-      background: linear-gradient(135deg, #F76900, #C03E00);
-      color: #fff; font-weight: 800; font-size: 13px; font-family: 'Inter', sans-serif;
-      padding: 0 22px; border-radius: 12px; border: none; cursor: pointer;
-      transition: opacity 0.15s, transform 0.1s; white-space: nowrap;
+      background: linear-gradient(135deg,#F76900,#C03E00); color: #fff; font-weight: 800;
+      font-size: 13px; font-family: 'Inter', sans-serif; padding: 0 20px; border-radius: 12px;
+      border: none; cursor: pointer; transition: opacity .15s, transform .1s; white-space: nowrap;
     }
-    .search-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .search-btn:hover { opacity: .9; transform: translateY(-1px); }
     .search-btn:active { transform: translateY(0); }
-    .search-hint { font-size: 11px; color: #c4b8ad; padding: 0 6px 2px; margin-top: 4px; }
+    .hint { font-size: 11px; color: #c4b8ad; padding: 0 6px 2px; margin-top: 3px; }
 
-    /* ── Main content area ── */
-    .content { max-width: 640px; margin: 0 auto; padding: 24px 16px 80px; }
+    /* ── School selector ── */
+    .school-selector { padding: 4px; }
+    .school-search-row { display: flex; gap: 7px; padding: 0 0 10px; }
+    .school-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 7px; max-height: 320px; overflow-y: auto; padding-bottom: 4px; }
+    .school-btn {
+      background: #FFFAF7; border: 1.5px solid #F0EBE5; border-radius: 11px;
+      padding: 10px 12px; text-align: left; cursor: pointer; transition: all .15s;
+      font-family: 'Inter', sans-serif;
+    }
+    .school-btn:hover { border-color: #FDBA74; background: #FFF3E8; }
+    .school-btn.selected { border-color: #F76900; background: linear-gradient(135deg,#FFF3E8,#FFE8D0); box-shadow: 0 2px 8px rgba(247,105,0,.15); }
+    .school-btn .sname { font-size: 12px; font-weight: 700; color: #111827; line-height: 1.3; }
+    .school-btn .sloc  { font-size: 10px; color: #b8b0a6; margin-top: 2px; }
+    .school-btn .semoji { font-size: 18px; margin-bottom: 5px; display: block; }
+    .school-searching { text-align: center; padding: 24px; color: #b8b0a6; font-size: 13px; }
+
+    /* ── Content ── */
+    .content { max-width: 640px; margin: 0 auto; padding: 20px 16px 80px; }
 
     /* ── Cards ── */
-    .card {
-      background: #fff; border-radius: 16px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.04);
-      overflow: hidden;
-    }
-    .card-hover { cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; }
-    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08), 0 20px 48px rgba(0,0,0,0.09); }
-
-    /* ── Result list ── */
+    .card { background: #fff; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.04); overflow: hidden; }
+    .card-hover { cursor: pointer; transition: transform .15s, box-shadow .15s; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08), 0 20px 48px rgba(0,0,0,.09); }
     .result-list { display: flex; flex-direction: column; gap: 10px; }
 
-    /* ── Prof card ── */
-    .prof-card { padding: 16px 18px; display: flex; align-items: center; gap: 14px; }
-    .rating-blob {
-      width: 54px; height: 54px; border-radius: 14px; flex-shrink: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 900; font-size: 17px; color: #fff;
-    }
+    /* ── Rating blob ── */
+    .blob-r { width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 16px; color: #fff; }
+
+    /* ── Tags ── */
     .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
-    .tag {
-      display: inline-flex; align-items: center;
-      padding: 3px 9px; border-radius: 999px;
-      font-size: 11px; font-weight: 600;
-    }
+    .tag { display: inline-flex; align-items: center; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; }
 
-    /* ── Section label ── */
-    .section-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #b8b0a6; }
-
-    /* ── Stat chips ── */
-    .stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
+    /* ── Stats ── */
+    .stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 8px; margin-top: 14px; }
     .stat-chip { background: #FFF8F2; border-radius: 12px; padding: 10px 8px; text-align: center; }
-    .stat-chip .v { font-size: 17px; font-weight: 800; color: #111827; }
+    .stat-chip .v { font-size: 17px; font-weight: 800; }
     .stat-chip .l { font-size: 10px; color: #b8b0a6; font-weight: 600; margin-top: 2px; }
 
     /* ── Reviews ── */
-    .review-item {
-      background: #FFFAF7; border-radius: 12px; padding: 14px 16px;
-      border-left: 3px solid #e5e7eb; margin-bottom: 8px;
-    }
+    .review-item { background: #FFFAF7; border-radius: 12px; padding: 14px 16px; border-left: 3px solid #e5e7eb; margin-bottom: 8px; }
     .review-item.good { border-left-color: #22c55e; }
     .review-item.bad  { border-left-color: #f87171; }
 
     /* ── Score bar ── */
     .score-bar { height: 4px; background: #F0EBE5; border-radius: 2px; overflow: hidden; margin-top: 8px; }
-    .score-fill { height: 100%; border-radius: 2px; transition: width 0.6s ease; }
+    .score-fill { height: 100%; border-radius: 2px; transition: width .6s ease; }
 
-    /* ── Premium lock ── */
-    .lock-card {
-      background: linear-gradient(135deg, #FFF8F2, #FFF3E8);
-      border: 2px dashed #FDC89A;
-      border-radius: 14px; padding: 20px;
-    }
+    /* ── Lock cards ── */
+    .lock-card { background: linear-gradient(135deg,#FFF8F2,#FFF0E0); border: 2px dashed #FDC89A; border-radius: 14px; padding: 18px; }
     .lock-row { display: flex; align-items: center; gap: 12px; }
-    .lock-icon-wrap { font-size: 28px; flex-shrink: 0; }
+    .lock-ico { font-size: 26px; flex-shrink: 0; }
     .lock-title { font-weight: 800; font-size: 14px; color: #111827; }
-    .lock-sub { font-size: 12px; color: #9ca3af; margin-top: 2px; line-height: 1.5; }
-    .unlock-btn {
-      margin-left: auto; background: linear-gradient(135deg,#F76900,#C03E00);
-      color: #fff; font-size: 12px; font-weight: 800; padding: 9px 18px;
-      border-radius: 10px; text-decoration: none; white-space: nowrap;
-      transition: opacity 0.15s; flex-shrink: 0;
-    }
-    .unlock-btn:hover { opacity: 0.88; }
+    .lock-sub   { font-size: 12px; color: #9ca3af; margin-top: 2px; line-height: 1.5; }
+    .unlock-btn { margin-left: auto; background: linear-gradient(135deg,#F76900,#C03E00); color: #fff; font-size: 12px; font-weight: 800; padding: 9px 16px; border-radius: 10px; text-decoration: none; white-space: nowrap; flex-shrink: 0; }
+    .unlock-btn:hover { opacity: .88; }
 
-    /* ── Spinner ── */
-    .spinner { animation: spin 0.8s linear infinite; }
+    /* ── Section label ── */
+    .slabel { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: #b8b0a6; }
+
+    /* ── Spinner / fade ── */
+    .spinner { animation: spin .8s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+    .fade-in { animation: fi .22s ease; }
+    @keyframes fi { from { opacity:0; transform:translateY(5px); } to { opacity:1; transform:translateY(0); } }
 
-    /* ── Animations ── */
-    .fade-in { animation: fadeIn 0.22s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-    /* ── RMP badge ── */
-    .rmp-link {
-      display: inline-flex; align-items: center; gap: 3px;
-      background: #FFF3E8; color: #C03E00; border: 1px solid #FDBA74;
-      border-radius: 999px; padding: 3px 10px; font-size: 11px; font-weight: 700;
-      text-decoration: none; transition: background 0.15s;
-    }
-    .rmp-link:hover { background: #FFE8D0; }
-
-    /* ── Free/premium badge ── */
-    .badge-free    { background: #F0FDF4; color: #16a34a; border: 1px solid #BBF7D0; }
-    .badge-premium { background: linear-gradient(135deg,#FFF3E8,#FFE8D0); color: #C03E00; border: 1px solid #FDBA74; }
-
-    /* ── Hidden ── */
     .hidden { display: none !important; }
-
-    /* ── Decorative blobs in hero ── */
-    .blob {
-      position: absolute; border-radius: 50%;
-      background: rgba(255,255,255,0.07);
-      pointer-events: none;
-    }
   </style>
 </head>
 <body>
-
-  <!-- Server-injected premium flag -->
   <script>const IS_PREMIUM = {{ premium | tojson }};</script>
 
   <!-- ── HERO ── -->
   <div class="hero">
-    <!-- Decorative blobs -->
-    <div class="blob" style="width:300px;height:300px;top:-100px;right:-80px;"></div>
-    <div class="blob" style="width:180px;height:180px;bottom:-60px;left:-40px;"></div>
+    <div class="blob" style="width:280px;height:280px;top:-100px;right:-70px;"></div>
+    <div class="blob" style="width:160px;height:160px;bottom:-50px;left:-30px;"></div>
 
     <div class="topbar">
-      <div class="topbar-brand">
-        <span style="font-size:26px;">🍊</span>
+      <div class="brand">
+        <span style="font-size:24px;">🍊</span>
         <div>
-          <span>SU Professor Finder</span>
-          <small>Syracuse University</small>
+          <div class="brand-name">Professor Finder</div>
+          <div class="brand-school" id="headerSchool">Syracuse University</div>
         </div>
       </div>
-      <div class="topbar-right" id="headerRight"></div>
+      <div id="headerRight"></div>
     </div>
 
     <div class="hero-body">
       <span class="otto">🍊</span>
-      <div id="tierPill"></div>
       <h1>Find your professor.<br><em>Before you register.</em></h1>
-      <p>Ratings · Easy A detection · Reddit buzz · Course rankings<br>All the intel SU students actually need.</p>
+      <p>Ratings · Easy A detection · Reddit buzz · Course rankings</p>
     </div>
 
-    <!-- Search card floats over hero bottom -->
+    <!-- Search card -->
     <div class="search-card">
       <div class="tab-strip">
-        <button class="tab-btn on" id="tabProf" onclick="setTab('professor')">👤 Professor Search</button>
-        <button class="tab-btn" id="tabCourse" onclick="setTab('course')">
-          📚 Course Search
-          <span class="pro-chip" id="proChip">PRO</span>
+        <button class="tab-btn on" id="tabProf"    onclick="setTab('professor')">👤 Professor</button>
+        <button class="tab-btn"    id="tabCourse"  onclick="setTab('course')">
+          📚 Course<span class="pro-chip" id="proChip">PRO</span>
         </button>
+        <button class="tab-btn"    id="tabCollege" onclick="setTab('college')">🎓 College</button>
       </div>
 
-      <!-- Professor panel -->
       <div id="panelProfessor">
         <div class="search-row">
           <input id="searchInput" type="text" placeholder="Search by last name — e.g. Johnson, Chen…" onkeydown="if(event.key==='Enter')doSearch()"/>
           <button class="search-btn" onclick="doSearch()">Search</button>
         </div>
-        <p class="search-hint">Free · All SU professors on Rate My Professors</p>
+        <p class="hint">Free · All professors at <span id="searchSchoolName">Syracuse University</span></p>
       </div>
 
-      <!-- Course panel -->
       <div id="panelCourse" class="hidden">
-        <div id="courseSearchArea"></div>
+        <div id="courseArea"></div>
+      </div>
+
+      <div id="panelCollege" class="hidden">
+        <div class="school-selector">
+          <div class="school-search-row">
+            <input id="schoolSearchInput" type="text" placeholder="Search any college or university…"
+              style="flex:1;border:2px solid #F0EBE5;border-radius:12px;padding:10px 14px;font-size:13px;font-family:'Inter',sans-serif;outline:none;transition:border-color .15s;"
+              oninput="onSchoolSearch(this.value)" onfocus="this.style.borderColor='#F76900'" onblur="this.style.borderColor='#F0EBE5'"/>
+          </div>
+          <div class="school-grid" id="schoolGrid"></div>
+        </div>
       </div>
     </div>
   </div>
@@ -277,416 +208,510 @@
   <!-- ── RESULTS ── -->
   <div class="content">
     <div id="searchResults" class="hidden" style="margin-top:4px;"></div>
-    <div id="profDetail" class="hidden" style="margin-top:12px;"></div>
+    <div id="profDetail"    class="hidden" style="margin-top:12px;"></div>
   </div>
 
   <script>
-    let activeTab = "professor";
+  // ── State ──────────────────────────────────────────────────────────────────
+  let activeTab = "professor";
+  let SCHOOL = JSON.parse(localStorage.getItem("pf_school") || "null") || {
+    id: null, name: "Syracuse University", state: "NY", city: "Syracuse"
+  };
 
-    // ── Header / tier setup ────────────────────────────────────────────────
-    document.getElementById("tierPill").innerHTML = IS_PREMIUM
-      ? `<div class="tier-pill tier-premium">⭐ Premium Member — Go Orange!</div>`
-      : `<div class="tier-pill tier-free">🆓 Free Plan · <a href="/pay" style="color:inherit;text-decoration:underline;text-underline-offset:2px;">Upgrade for $1.99</a></div>`;
+  // ── Top 101 colleges list ──────────────────────────────────────────────────
+  const COLLEGES = [
+    // Ivy League
+    {name:"Harvard University",          city:"Cambridge",     state:"MA", emoji:"🎓"},
+    {name:"Yale University",             city:"New Haven",     state:"CT", emoji:"🎓"},
+    {name:"Princeton University",        city:"Princeton",     state:"NJ", emoji:"🎓"},
+    {name:"Columbia University",         city:"New York",      state:"NY", emoji:"🏙️"},
+    {name:"University of Pennsylvania",  city:"Philadelphia",  state:"PA", emoji:"🎓"},
+    {name:"Cornell University",          city:"Ithaca",        state:"NY", emoji:"🎓"},
+    {name:"Dartmouth College",           city:"Hanover",       state:"NH", emoji:"🎓"},
+    {name:"Brown University",            city:"Providence",    state:"RI", emoji:"🎓"},
+    // Top research
+    {name:"MIT",                         city:"Cambridge",     state:"MA", emoji:"⚗️"},
+    {name:"Stanford University",         city:"Stanford",      state:"CA", emoji:"🌲"},
+    {name:"California Institute of Technology",city:"Pasadena",state:"CA", emoji:"⚗️"},
+    {name:"University of Chicago",       city:"Chicago",       state:"IL", emoji:"🏛️"},
+    {name:"Johns Hopkins University",    city:"Baltimore",     state:"MD", emoji:"🔬"},
+    {name:"Northwestern University",     city:"Evanston",      state:"IL", emoji:"🎓"},
+    {name:"Duke University",             city:"Durham",        state:"NC", emoji:"🎓"},
+    {name:"Vanderbilt University",       city:"Nashville",     state:"TN", emoji:"🎸"},
+    {name:"Rice University",             city:"Houston",       state:"TX", emoji:"🎓"},
+    {name:"Notre Dame University",       city:"Notre Dame",    state:"IN", emoji:"☘️"},
+    {name:"Georgetown University",       city:"Washington",    state:"DC", emoji:"🏛️"},
+    {name:"Carnegie Mellon University",  city:"Pittsburgh",    state:"PA", emoji:"💻"},
+    {name:"Emory University",            city:"Atlanta",       state:"GA", emoji:"🎓"},
+    {name:"Tufts University",            city:"Medford",       state:"MA", emoji:"🎓"},
+    {name:"Washington University in St Louis",city:"St. Louis",state:"MO", emoji:"🎓"},
+    {name:"Wake Forest University",      city:"Winston-Salem", state:"NC", emoji:"🎓"},
+    {name:"Case Western Reserve University",city:"Cleveland",  state:"OH", emoji:"🔬"},
+    {name:"Tulane University",           city:"New Orleans",   state:"LA", emoji:"🎺"},
+    {name:"Lehigh University",           city:"Bethlehem",     state:"PA", emoji:"🎓"},
+    {name:"University of Rochester",     city:"Rochester",     state:"NY", emoji:"🎓"},
+    // Top public
+    {name:"UC Berkeley",                 city:"Berkeley",      state:"CA", emoji:"🐻"},
+    {name:"UCLA",                        city:"Los Angeles",   state:"CA", emoji:"🌴"},
+    {name:"University of Michigan",      city:"Ann Arbor",     state:"MI", emoji:"〽️"},
+    {name:"UNC Chapel Hill",             city:"Chapel Hill",   state:"NC", emoji:"🐏"},
+    {name:"University of Virginia",      city:"Charlottesville",state:"VA",emoji:"🏛️"},
+    {name:"UC San Diego",                city:"La Jolla",      state:"CA", emoji:"🌊"},
+    {name:"UC Davis",                    city:"Davis",         state:"CA", emoji:"🐄"},
+    {name:"UC Santa Barbara",            city:"Santa Barbara", state:"CA", emoji:"🌊"},
+    {name:"UC Irvine",                   city:"Irvine",        state:"CA", emoji:"🌞"},
+    {name:"Georgia Institute of Technology",city:"Atlanta",    state:"GA", emoji:"⚙️"},
+    {name:"University of Illinois Urbana-Champaign",city:"Champaign",state:"IL",emoji:"🌽"},
+    {name:"University of Wisconsin-Madison",city:"Madison",    state:"WI", emoji:"🧀"},
+    {name:"University of Texas at Austin",city:"Austin",       state:"TX", emoji:"🤘"},
+    {name:"Ohio State University",       city:"Columbus",      state:"OH", emoji:"🌰"},
+    {name:"Penn State University",       city:"State College", state:"PA", emoji:"🦁"},
+    {name:"University of Florida",       city:"Gainesville",   state:"FL", emoji:"🐊"},
+    {name:"University of Washington",    city:"Seattle",       state:"WA", emoji:"🌲"},
+    {name:"Purdue University",           city:"West Lafayette",state:"IN", emoji:"🚀"},
+    {name:"Indiana University Bloomington",city:"Bloomington", state:"IN", emoji:"🎓"},
+    {name:"Michigan State University",   city:"East Lansing",  state:"MI", emoji:"🌿"},
+    {name:"University of Maryland",      city:"College Park",  state:"MD", emoji:"🐢"},
+    {name:"Rutgers University",          city:"New Brunswick", state:"NJ", emoji:"🎓"},
+    {name:"University of Minnesota",     city:"Minneapolis",   state:"MN", emoji:"❄️"},
+    {name:"University of Colorado Boulder",city:"Boulder",     state:"CO", emoji:"🏔️"},
+    {name:"University of Arizona",       city:"Tucson",        state:"AZ", emoji:"🌵"},
+    {name:"Arizona State University",    city:"Tempe",         state:"AZ", emoji:"☀️"},
+    {name:"University of Utah",          city:"Salt Lake City",state:"UT", emoji:"⛷️"},
+    {name:"University of Oregon",        city:"Eugene",        state:"OR", emoji:"🌲"},
+    {name:"Oregon State University",     city:"Corvallis",     state:"OR", emoji:"🌲"},
+    // New York schools
+    {name:"Syracuse University",         city:"Syracuse",      state:"NY", emoji:"🍊"},
+    {name:"NYU",                         city:"New York",      state:"NY", emoji:"🗽"},
+    {name:"Fordham University",          city:"New York",      state:"NY", emoji:"🏙️"},
+    {name:"Stony Brook University",      city:"Stony Brook",   state:"NY", emoji:"🎓"},
+    {name:"University at Buffalo",       city:"Buffalo",       state:"NY", emoji:"🦬"},
+    // Boston area
+    {name:"Boston University",           city:"Boston",        state:"MA", emoji:"🦞"},
+    {name:"Boston College",              city:"Chestnut Hill", state:"MA", emoji:"🦅"},
+    {name:"Northeastern University",     city:"Boston",        state:"MA", emoji:"🐾"},
+    // Pennsylvania
+    {name:"Villanova University",        city:"Villanova",     state:"PA", emoji:"🎓"},
+    {name:"Drexel University",           city:"Philadelphia",  state:"PA", emoji:"🐲"},
+    {name:"Temple University",           city:"Philadelphia",  state:"PA", emoji:"🦉"},
+    // DC
+    {name:"George Washington University",city:"Washington",    state:"DC", emoji:"🏛️"},
+    {name:"American University",         city:"Washington",    state:"DC", emoji:"🏛️"},
+    // South
+    {name:"University of Georgia",       city:"Athens",        state:"GA", emoji:"🐶"},
+    {name:"University of Alabama",       city:"Tuscaloosa",    state:"AL", emoji:"🐘"},
+    {name:"Auburn University",           city:"Auburn",        state:"AL", emoji:"🐯"},
+    {name:"Louisiana State University",  city:"Baton Rouge",   state:"LA", emoji:"🐯"},
+    {name:"University of Tennessee",     city:"Knoxville",     state:"TN", emoji:"🍊"},
+    {name:"University of Kentucky",      city:"Lexington",     state:"KY", emoji:"🏀"},
+    {name:"Clemson University",          city:"Clemson",       state:"SC", emoji:"🐯"},
+    {name:"NC State University",         city:"Raleigh",       state:"NC", emoji:"🐺"},
+    {name:"Virginia Tech",               city:"Blacksburg",    state:"VA", emoji:"🦃"},
+    {name:"Florida State University",    city:"Tallahassee",   state:"FL", emoji:"🏈"},
+    // Midwest
+    {name:"University of Iowa",          city:"Iowa City",     state:"IA", emoji:"🌽"},
+    {name:"Iowa State University",       city:"Ames",          state:"IA", emoji:"🌪️"},
+    {name:"University of Nebraska",      city:"Lincoln",       state:"NE", emoji:"🌽"},
+    {name:"University of Kansas",        city:"Lawrence",      state:"KS", emoji:"🏀"},
+    {name:"University of Missouri",      city:"Columbia",      state:"MO", emoji:"🐯"},
+    {name:"University of Oklahoma",      city:"Norman",        state:"OK", emoji:"🏈"},
+    {name:"Texas A&M University",        city:"College Station",state:"TX",emoji:"🤠"},
+    {name:"Texas Tech University",       city:"Lubbock",       state:"TX", emoji:"🌵"},
+    // UConn / UMass
+    {name:"University of Connecticut",   city:"Storrs",        state:"CT", emoji:"🐶"},
+    {name:"UMass Amherst",               city:"Amherst",       state:"MA", emoji:"🎓"},
+    // Colorado
+    {name:"Colorado State University",   city:"Fort Collins",  state:"CO", emoji:"🐏"},
+    // California state
+    {name:"San Diego State University",  city:"San Diego",     state:"CA", emoji:"🌊"},
+    {name:"Cal Poly San Luis Obispo",    city:"San Luis Obispo",state:"CA",emoji:"🐴"},
+    {name:"Cal State Long Beach",        city:"Long Beach",     state:"CA",emoji:"🌊"},
+    {name:"San Jose State University",   city:"San Jose",      state:"CA", emoji:"💻"},
+    {name:"Fresno State",                city:"Fresno",        state:"CA", emoji:"🌳"},
+    {name:"Washington State University", city:"Pullman",       state:"WA", emoji:"🌾"},
+    // Mississippi
+    {name:"University of Mississippi",   city:"Oxford",        state:"MS", emoji:"🎓"},
+    // Hawaii
+    {name:"University of Hawaii",        city:"Honolulu",      state:"HI", emoji:"🌺"},
+  ];
 
+  let filteredColleges = [...COLLEGES];
+  let schoolSearchTimer = null;
+
+  // ── Init ───────────────────────────────────────────────────────────────────
+  (function init() {
+    // Header
     document.getElementById("headerRight").innerHTML = IS_PREMIUM
-      ? `<span style="background:rgba(255,255,255,0.2);color:#fff;font-size:11px;font-weight:700;padding:5px 12px;border-radius:999px;">⭐ Premium</span>`
-      : `<a href="/pay" style="background:rgba(255,255,255,0.18);color:#fff;font-size:11px;font-weight:700;padding:5px 12px;border-radius:999px;text-decoration:none;border:1.5px solid rgba(255,255,255,0.3);">Upgrade $1.99 →</a>`;
+      ? `<span class="tier-btn tier-premium">⭐ Premium</span>`
+      : `<a href="/pay" class="tier-btn tier-free">Upgrade $1.99 →</a>`;
 
     if (IS_PREMIUM) document.getElementById("proChip").style.display = "none";
 
-    // ── Tab switching ──────────────────────────────────────────────────────
-    function setTab(tab) {
-      activeTab = tab;
-      const isProf = tab === "professor";
-      document.getElementById("panelProfessor").classList.toggle("hidden", !isProf);
-      document.getElementById("panelCourse").classList.toggle("hidden", isProf);
-      document.getElementById("tabProf").className   = "tab-btn" + (isProf  ? " on" : "");
-      document.getElementById("tabCourse").className = "tab-btn" + (!isProf ? " on" : "");
-      document.getElementById("searchResults").innerHTML = "";
-      document.getElementById("searchResults").classList.add("hidden");
-      clearDetail();
-      if (!isProf) renderCoursePanel();
+    updateSchoolDisplay();
+    renderSchoolGrid(COLLEGES);
+  })();
+
+  function updateSchoolDisplay() {
+    const name = SCHOOL.name;
+    document.getElementById("headerSchool").textContent = name;
+    document.getElementById("searchSchoolName").textContent = name;
+  }
+
+  // ── Tab switching ──────────────────────────────────────────────────────────
+  function setTab(tab) {
+    activeTab = tab;
+    ["professor","course","college"].forEach(t => {
+      document.getElementById("panel"+cap(t)).classList.toggle("hidden", t!==tab);
+      document.getElementById("tab"+cap(t)).className = "tab-btn" + (t===tab?" on":"");
+    });
+    document.getElementById("searchResults").innerHTML="";
+    document.getElementById("searchResults").classList.add("hidden");
+    clearDetail();
+    if (tab==="course")  renderCourseArea();
+    if (tab==="college") renderSchoolGrid(filteredColleges);
+  }
+  function cap(s){ return s[0].toUpperCase()+s.slice(1); }
+
+  // ── College tab ────────────────────────────────────────────────────────────
+  function renderSchoolGrid(list) {
+    const el = document.getElementById("schoolGrid");
+    el.innerHTML = list.map(c => {
+      const sel = SCHOOL.name === c.name;
+      return `<button class="school-btn ${sel?"selected":""}" onclick="selectSchool(${JSON.stringify(JSON.stringify(c))})">
+        <span class="semoji">${c.emoji}</span>
+        <div class="sname">${esc(c.name)}</div>
+        <div class="sloc">${esc(c.city)}, ${esc(c.state)}</div>
+      </button>`;
+    }).join("") || `<div class="school-searching">No matches found</div>`;
+  }
+
+  function selectSchool(jsonStr) {
+    const c = JSON.parse(jsonStr);
+    // Look up school ID via RMP
+    SCHOOL = { id: null, name: c.name, city: c.city, state: c.state };
+    updateSchoolDisplay();
+    renderSchoolGrid(filteredColleges);
+    // Fetch real school ID in background
+    fetch(`/api/schools?q=${encodeURIComponent(c.name)}`)
+      .then(r=>r.json())
+      .then(data=>{
+        if (data.results && data.results.length) {
+          // Pick best match: same state preferred
+          const match = data.results.find(s=>s.state===c.state) || data.results[0];
+          SCHOOL.id = match.id;
+          SCHOOL.name = match.name || c.name;
+          localStorage.setItem("pf_school", JSON.stringify(SCHOOL));
+          updateSchoolDisplay();
+        }
+      }).catch(()=>{});
+    localStorage.setItem("pf_school", JSON.stringify(SCHOOL));
+    // Switch to professor search
+    setTab("professor");
+    setTimeout(()=>document.getElementById("searchInput").focus(), 100);
+  }
+
+  let _schoolSearchTimer = null;
+  function onSchoolSearch(val) {
+    clearTimeout(_schoolSearchTimer);
+    const q = val.toLowerCase().trim();
+    if (!q) {
+      filteredColleges = [...COLLEGES];
+      renderSchoolGrid(filteredColleges);
+      return;
+    }
+    // First filter local list
+    filteredColleges = COLLEGES.filter(c =>
+      c.name.toLowerCase().includes(q) || c.city.toLowerCase().includes(q) || c.state.toLowerCase().includes(q)
+    );
+    renderSchoolGrid(filteredColleges);
+    // Also search RMP for schools not in the list (debounced)
+    if (val.length >= 3) {
+      _schoolSearchTimer = setTimeout(() => {
+        fetch(`/api/schools?q=${encodeURIComponent(val)}`)
+          .then(r=>r.json())
+          .then(data=>{
+            if (!data.results) return;
+            const extra = data.results.filter(s => !COLLEGES.some(c=>c.name.toLowerCase()===s.name.toLowerCase()));
+            if (extra.length) {
+              const combined = [...filteredColleges, ...extra.map(s=>({name:s.name, city:s.city||"", state:s.state||"", emoji:"🎓", _rmpId:s.id}))];
+              renderSchoolGrid(combined);
+            }
+          }).catch(()=>{});
+      }, 350);
+    }
+  }
+
+  // ── Course search area ────────────────────────────────────────────────────
+  function renderCourseArea() {
+    const el = document.getElementById("courseArea");
+    if (!IS_PREMIUM) {
+      el.innerHTML = `
+        <div style="padding:4px 4px 8px;">
+          <div class="lock-card">
+            <div class="lock-row">
+              <div class="lock-ico">🔒</div>
+              <div><p class="lock-title">Course Search — Premium Only</p>
+                <p class="lock-sub">Find every professor teaching any course — ranked by student data. One-time $1.99.</p>
+              </div>
+            </div>
+            <a href="/pay" style="display:block;text-align:center;margin-top:14px;background:linear-gradient(135deg,#F76900,#C03E00);color:#fff;font-weight:800;font-size:14px;padding:13px;border-radius:12px;text-decoration:none;">🍊 Unlock Premium — $1.99</a>
+          </div>
+        </div>`;
+      return;
+    }
+    el.innerHTML = `
+      <div class="search-row">
+        <input id="courseInput" type="text" placeholder="Course code or name — e.g. MAT 295, Chemistry…" onkeydown="if(event.key==='Enter')doCourseSearch()"/>
+        <button class="search-btn" onclick="doCourseSearch()">Find Profs</button>
+      </div>
+      <p class="hint">Ranked by rating · ease · retake rate at <span>${esc(SCHOOL.name)}</span></p>`;
+  }
+
+  // ── Course search ─────────────────────────────────────────────────────────
+  async function doCourseSearch() {
+    const course = document.getElementById("courseInput").value.trim();
+    if (!course) return;
+    clearDetail();
+    const sid = SCHOOL.id || "";
+    let cached = false;
+    try { cached = (await (await fetch(`/api/index-status?school_id=${encodeURIComponent(sid)}`)).json()).cached; } catch(_){}
+    showLoader("searchResults", cached?`Searching for "${course}"…`:"Building professor index — hold tight (~10 sec)…");
+    try {
+      const res  = await fetch(`/api/course?course=${encodeURIComponent(course)}&school_id=${encodeURIComponent(sid)}`);
+      const data = await res.json();
+      if (data.error) { showError(data.error); return; }
+      renderCourseResults(data.results, data.course);
+    } catch(e) { showError("Network error — try again."); }
+  }
+
+  function renderCourseResults(profs, q) {
+    const el = document.getElementById("searchResults");
+    if (!profs.length) {
+      el.innerHTML = `<div class="card" style="padding:32px;text-align:center;color:#9ca3af;">No professors found for <strong>${esc(q)}</strong>.</div>`;
+      el.classList.remove("hidden"); return;
+    }
+    el.innerHTML = `
+      <div style="margin-bottom:12px;">
+        <p style="font-weight:800;font-size:16px;">Professors for <span style="color:#C03E00;">${esc(q)}</span></p>
+        <p style="font-size:11px;color:#b8b0a6;margin-top:2px;">Ranked by rating · ease · retake rate</p>
+      </div>
+      <div class="result-list">${profs.map((p,i)=>courseCard(p,i)).join("")}</div>`;
+    el.classList.remove("hidden");
+  }
+
+  function courseCard(p, i) {
+    const rating = p.avgRating!=null?p.avgRating.toFixed(1):"?";
+    const diff   = p.avgDifficulty!=null?p.avgDifficulty.toFixed(1):"?";
+    const wtag   = p.wouldTakeAgainPercent>=0?Math.round(p.wouldTakeAgainPercent)+"%":"N/A";
+    const score  = p.rankScore??0;
+    const bg     = rGrad(p.avgRating);
+    const isEasy = p.avgDifficulty!=null&&p.avgDifficulty<=2.5&&(p.wouldTakeAgainPercent<0||p.wouldTakeAgainPercent>=60);
+    const medals = ["🥇","🥈","🥉"];
+    const rank   = i<3?`<span style="font-size:22px;flex-shrink:0;">${medals[i]}</span>`
+                      :`<span style="font-weight:800;color:#d1d5db;font-size:12px;min-width:22px;text-align:center;flex-shrink:0;">#${i+1}</span>`;
+    const bc     = score>=60?"#22c55e":score>=40?"#f59e0b":"#f87171";
+    const dc     = diff<=2?"#16a34a":diff<=3.5?"#d97706":"#dc2626";
+    return `<div class="card card-hover fade-in" onclick="loadProfessor('${p.id}','${esc(p.firstName)} ${esc(p.lastName)}')">
+      <div style="padding:15px 17px;display:flex;align-items:center;gap:11px;">
+        ${rank}
+        <div class="blob-r" style="background:${bg};">${rating}</div>
+        <div style="flex:1;min-width:0;">
+          <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
+            <span style="font-weight:800;font-size:15px;">${esc(p.firstName)} ${esc(p.lastName)}</span>
+            ${isEasy?`<span class="tag" style="background:#DCFCE7;color:#16a34a;">✓ Easy A</span>`:""}
+          </div>
+          <p style="font-size:11px;color:#b8b0a6;margin-top:1px;">${esc(p.department||"")}</p>
+          <div class="tags">
+            <span class="tag" style="background:#FEF3C7;color:#b45309;">⭐ ${rating}/5</span>
+            <span class="tag" style="background:#F5F5F4;color:${dc};">🔥 ${diff}/5</span>
+            <span class="tag" style="background:#F5F5F4;color:#6b7280;">🔁 ${wtag}</span>
+            <span class="tag" style="background:#F5F5F4;color:#9ca3af;">${p.numRatings} reviews</span>
+          </div>
+          <div class="score-bar"><div class="score-fill" style="width:${score}%;background:${bc};"></div></div>
+          <div style="display:flex;justify-content:space-between;margin-top:2px;">
+            <span style="font-size:10px;color:#d1c8be;">Score</span>
+            <span style="font-size:10px;font-weight:700;color:#9ca3af;">${score}/100</span>
+          </div>
+        </div>
+        <svg width="13" height="13" fill="none" stroke="#d1d5db" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+    </div>`;
+  }
+
+  // ── Professor search ───────────────────────────────────────────────────────
+  async function doSearch() {
+    const name = document.getElementById("searchInput").value.trim();
+    if (!name) return;
+    clearDetail();
+    showLoader("searchResults","Searching Rate My Professors…");
+    const sid = SCHOOL.id || "";
+    try {
+      const res  = await fetch(`/api/search?name=${encodeURIComponent(name)}&school_id=${encodeURIComponent(sid)}`);
+      const data = await res.json();
+      if (data.error) { showError(data.error); return; }
+      renderProfList(data.results);
+    } catch(e) { showError("Network error — try again."); }
+  }
+
+  function renderProfList(profs) {
+    const el = document.getElementById("searchResults");
+    if (!profs.length) {
+      el.innerHTML = `<div class="card" style="padding:32px;text-align:center;color:#9ca3af;font-size:14px;">No professors found. Try a different name.</div>`;
+      el.classList.remove("hidden"); return;
+    }
+    el.innerHTML = `
+      <p style="font-size:11px;color:#b8b0a6;margin-bottom:8px;">${profs.length} result${profs.length!==1?"s":""} — tap to expand</p>
+      <div class="result-list">${profs.map(profCard).join("")}</div>`;
+    el.classList.remove("hidden");
+  }
+
+  function profCard(p) {
+    const rating = p.avgRating!=null?p.avgRating.toFixed(1):"?";
+    const diff   = p.avgDifficulty!=null?p.avgDifficulty.toFixed(1):"?";
+    const wtag   = p.wouldTakeAgainPercent>=0?Math.round(p.wouldTakeAgainPercent)+"%":"N/A";
+    const bg = rGrad(p.avgRating);
+    const dc = diff<=2?"#16a34a":diff<=3.5?"#d97706":"#dc2626";
+    return `<div class="card card-hover fade-in" onclick="loadProfessor('${p.id}','${esc(p.firstName)} ${esc(p.lastName)}')">
+      <div style="padding:14px 16px;display:flex;align-items:center;gap:13px;">
+        <div class="blob-r" style="background:${bg};">${rating}</div>
+        <div style="flex:1;min-width:0;">
+          <p style="font-weight:800;font-size:15px;">${esc(p.firstName)} ${esc(p.lastName)}</p>
+          <p style="font-size:11px;color:#b8b0a6;margin-top:2px;">${esc(p.department||"")}</p>
+          <div class="tags">
+            <span class="tag" style="background:#FEF3C7;color:#b45309;">⭐ ${rating}/5</span>
+            <span class="tag" style="background:#F5F5F4;color:${dc};">Difficulty ${diff}/5</span>
+            <span class="tag" style="background:#F5F5F4;color:#6b7280;">🔁 ${wtag}</span>
+            <span class="tag" style="background:#F5F5F4;color:#9ca3af;">${p.numRatings} reviews</span>
+          </div>
+        </div>
+        <svg width="13" height="13" fill="none" stroke="#d1d5db" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+      </div>
+    </div>`;
+  }
+
+  // ── Professor detail ───────────────────────────────────────────────────────
+  async function loadProfessor(id, name) {
+    showLoader("profDetail",`Loading ${name}…`);
+    document.getElementById("profDetail").classList.remove("hidden");
+    document.getElementById("profDetail").scrollIntoView({behavior:"smooth",block:"start"});
+    try {
+      const res  = await fetch(`/api/professor/${encodeURIComponent(id)}`);
+      const data = await res.json();
+      if (data.error) { document.getElementById("profDetail").innerHTML=`<div class="card" style="padding:20px;color:#f87171;">${data.error}</div>`; return; }
+      renderProfDetail(data);
+    } catch(e) { document.getElementById("profDetail").innerHTML=`<div class="card" style="padding:20px;color:#f87171;">Failed to load.</div>`; }
+  }
+
+  function renderProfDetail(data) {
+    const {professor:p,ratings,easyA,examMentions,redditPosts,isPremium} = data;
+    const bg = rGrad(p.avgRating);
+    const wtag = p.wouldTakeAgainPercent>=0?Math.round(p.wouldTakeAgainPercent):null;
+    const dc = !p.avgDifficulty?"#9ca3af":p.avgDifficulty<=2?"#16a34a":p.avgDifficulty<=3.5?"#d97706":"#dc2626";
+
+    // Easy A
+    let easyAHtml = "";
+    if (isPremium && easyA) {
+      easyAHtml = easyA.is_easy_a
+        ? `<div style="background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:12px;padding:13px 15px;display:flex;gap:10px;align-items:center;margin-top:16px;"><span style="font-size:22px;">✅</span><div><p style="font-weight:800;color:#15803d;font-size:13px;">Likely an Easy A</p><p style="color:#16a34a;font-size:11px;margin-top:2px;">${easyA.reasons.join(" · ")}</p></div></div>`
+        : `<div style="background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:12px;padding:13px 15px;display:flex;gap:10px;align-items:center;margin-top:16px;"><span style="font-size:22px;">⚠️</span><div><p style="font-weight:800;color:#b45309;font-size:13px;">Not an Easy A</p><p style="color:#d97706;font-size:11px;margin-top:2px;">${easyA.reasons.length?easyA.reasons.join(" · "):"Moderate to high difficulty"}</p></div></div>`;
+    } else if (!isPremium) {
+      easyAHtml = `<div class="lock-card" style="margin-top:16px;"><div class="lock-row"><div class="lock-ico">🔒</div><div><p class="lock-title">Easy A Score</p><p class="lock-sub">Find out if this professor is an easy grader.</p></div><a href="/pay" class="unlock-btn">Unlock $1.99</a></div></div>`;
     }
 
-    function renderCoursePanel() {
-      const el = document.getElementById("courseSearchArea");
-      if (!IS_PREMIUM) {
-        el.innerHTML = `
-          <div style="padding:4px 4px 8px;">
-            <div class="lock-card">
-              <div class="lock-row">
-                <div class="lock-icon-wrap">🔒</div>
-                <div>
-                  <p class="lock-title">Course Search — Premium Only</p>
-                  <p class="lock-sub">Find every professor teaching MAT 295, WRT 105, or any SU course — ranked by student data. One-time $1.99.</p>
-                </div>
+    // Grade dist
+    const gradeDist = isPremium&&easyA&&Object.keys(easyA.grade_distribution||{}).length
+      ? `<div style="margin-top:16px;"><p class="slabel" style="margin-bottom:8px;">Grade Distribution</p><div style="display:flex;flex-wrap:wrap;gap:6px;">${Object.entries(easyA.grade_distribution).sort((a,b)=>b[1]-a[1]).map(([g,c])=>`<div style="background:#FFF8F2;border:1px solid #F0E8E0;border-radius:8px;padding:7px 12px;text-align:center;"><div style="font-weight:800;font-size:14px;">${esc(g)}</div><div style="font-size:10px;color:#b8b0a6;">${c}x</div></div>`).join("")}</div></div>`:""
+
+    // Courses
+    const courses = p.courseCodes?.length
+      ? `<div style="margin-top:16px;"><p class="slabel" style="margin-bottom:8px;">Courses Taught</p><div style="display:flex;flex-wrap:wrap;gap:5px;">${p.courseCodes.slice(0,12).map(c=>`<span class="tag" style="background:#FFF3E8;color:#C03E00;border:1px solid #FDBA74;">${esc(c.courseName)}</span>`).join("")}</div></div>`:""
+
+    // Reviews
+    const shown = isPremium?ratings:ratings.slice(0,3);
+    const reviewsHtml = shown.length
+      ? shown.map(r=>{
+          const good=isPremium&&r.wouldTakeAgain===true, bad=isPremium&&r.wouldTakeAgain===false;
+          return `<div class="review-item ${good?"good":bad?"bad":""}">
+            <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
+              <div class="tags">
+                ${r.class?`<span class="tag" style="background:#FFF3E8;color:#C03E00;">${esc(r.class)}</span>`:""}
+                ${r.grade?`<span class="tag" style="background:#EEF2FF;color:#4f46e5;">Grade: ${esc(r.grade)}</span>`:""}
+                ${isPremium&&r.wouldTakeAgain===true?`<span class="tag" style="background:#F0FDF4;color:#16a34a;">Would retake ✓</span>`:""}
+                ${isPremium&&r.wouldTakeAgain===false?`<span class="tag" style="background:#FEF2F2;color:#dc2626;">Wouldn't retake</span>`:""}
               </div>
-              <a href="/pay" style="display:block;text-align:center;margin-top:16px;background:linear-gradient(135deg,#F76900,#C03E00);color:#fff;font-weight:800;font-size:14px;padding:13px;border-radius:12px;text-decoration:none;">🍊 Unlock Premium — $1.99</a>
+              <div style="display:flex;gap:8px;font-size:10px;color:#b8b0a6;">
+                <span>Helpful ${r.helpfulRating}/5</span><span>Clarity ${r.clarityRating}/5</span>
+                <span style="color:${r.difficultyRating<=2?"#16a34a":r.difficultyRating<=3.5?"#d97706":"#dc2626"};">Diff ${r.difficultyRating}/5</span>
+              </div>
             </div>
+            ${r.comment?`<p style="font-size:13px;color:#374151;font-style:italic;line-height:1.55;">"${esc(r.comment)}"</p>`:`<p style="font-size:12px;color:#b8b0a6;font-style:italic;">No comment left.</p>`}
           </div>`;
-        return;
-      }
-      el.innerHTML = `
-        <div class="search-row">
-          <input id="courseInput" type="text" placeholder="Course code or name — e.g. MAT 295, Chemistry…" onkeydown="if(event.key==='Enter')doCourseSearch()"/>
-          <button class="search-btn" onclick="doCourseSearch()">Find Profs</button>
-        </div>
-        <p class="search-hint">Ranked by rating · ease · retake rate</p>`;
-    }
+        }).join("")
+      : `<p style="font-size:13px;color:#b8b0a6;">No reviews yet.</p>`;
 
-    // ── Course search ──────────────────────────────────────────────────────
-    async function doCourseSearch() {
-      const course = document.getElementById("courseInput").value.trim();
-      if (!course) return;
-      clearDetail();
-      let cached = false;
-      try { cached = (await (await fetch("/api/index-status")).json()).cached; } catch(_) {}
-      showLoader("searchResults", cached ? `Searching for "${course}"…` : "Building SU professor index — hold tight (~10 sec)…");
-      try {
-        const res = await fetch(`/api/course?course=${encodeURIComponent(course)}`);
-        const data = await res.json();
-        if (data.error) { showSearchError(data.error); return; }
-        renderCourseResults(data.results, data.course);
-      } catch(e) { showSearchError("Network error — try again."); }
-    }
+    const moreReviews = !isPremium&&ratings.length>3
+      ? `<div class="lock-card" style="margin-top:10px;padding:16px;"><p style="font-weight:700;font-size:13px;color:#374151;">🔒 ${ratings.length-3} more review${ratings.length-3!==1?"s":""} with Premium</p><a href="/pay" style="display:inline-block;margin-top:10px;background:linear-gradient(135deg,#F76900,#C03E00);color:#fff;font-size:12px;font-weight:800;padding:8px 20px;border-radius:10px;text-decoration:none;">See All Reviews — $1.99</a></div>`:""
 
-    function renderCourseResults(profs, q) {
-      const el = document.getElementById("searchResults");
-      if (!profs.length) {
-        el.innerHTML = `<div class="card" style="padding:32px;text-align:center;color:#9ca3af;">No professors found teaching <strong>${esc(q)}</strong>.</div>`;
-        el.classList.remove("hidden"); return;
-      }
-      el.innerHTML = `
-        <div style="margin-bottom:12px;">
-          <p style="font-weight:800;font-size:16px;color:#111827;">
-            Professors for <span style="color:#C03E00;">${esc(q)}</span>
-          </p>
-          <p style="font-size:11px;color:#b8b0a6;margin-top:3px;">Ranked by rating · ease · retake rate</p>
-        </div>
-        <div class="result-list">${profs.map((p,i)=>courseCard(p,i)).join("")}</div>`;
-      el.classList.remove("hidden");
-    }
+    // Exam
+    const examHtml = isPremium
+      ? (examMentions.length
+        ? `<div class="card" style="padding:20px;margin-top:10px;"><p style="font-weight:800;font-size:14px;margin-bottom:12px;">📝 Exam Mentions <span class="tag" style="background:#DBEAFE;color:#2563eb;margin-left:4px;">${examMentions.length}</span></p><div style="display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;">${examMentions.slice(0,8).map(m=>`<div style="background:#FFFAF7;border-radius:10px;padding:10px 12px;"><p style="font-size:10px;font-weight:700;color:#b8b0a6;margin-bottom:4px;">${m.class||""}</p><p style="font-size:13px;color:#374151;font-style:italic;">"${esc(m.comment)}"</p><div class="tags" style="margin-top:5px;">${m.keywords.map(k=>`<span class="tag" style="background:#DBEAFE;color:#3b82f6;">${k}</span>`).join("")}</div></div>`).join("")}</div></div>`
+        : `<div class="card" style="padding:20px;margin-top:10px;"><p style="font-weight:800;font-size:14px;">📝 Exam Mentions</p><p style="font-size:13px;color:#b8b0a6;margin-top:6px;">No exam mentions found.</p></div>`)
+      : `<div class="card" style="padding:20px;margin-top:10px;"><div class="lock-row"><div class="lock-ico">📝</div><div><p class="lock-title">Exam & Test Mentions</p><p class="lock-sub">See which reviews mention midterms, finals, and quizzes.</p></div><a href="/pay" class="unlock-btn">Unlock $1.99</a></div></div>`;
 
-    function courseCard(p, i) {
-      const rating = p.avgRating != null ? p.avgRating.toFixed(1) : "?";
-      const diff   = p.avgDifficulty != null ? p.avgDifficulty.toFixed(1) : "?";
-      const wtag   = p.wouldTakeAgainPercent >= 0 ? Math.round(p.wouldTakeAgainPercent) + "%" : "N/A";
-      const score  = p.rankScore ?? 0;
-      const bg     = ratingGrad(p.avgRating);
-      const isEasyA = p.avgDifficulty != null && p.avgDifficulty <= 2.5 && (p.wouldTakeAgainPercent < 0 || p.wouldTakeAgainPercent >= 60);
-      const medals = ["🥇","🥈","🥉"];
-      const rankEl = i < 3
-        ? `<span style="font-size:22px;flex-shrink:0;">${medals[i]}</span>`
-        : `<span style="font-weight:800;color:#d1d5db;font-size:13px;min-width:22px;text-align:center;flex-shrink:0;">#${i+1}</span>`;
-      const barColor = score>=60?"#22c55e":score>=40?"#f59e0b":"#f87171";
-      const diffColor = diff<=2?"#16a34a":diff<=3.5?"#d97706":"#dc2626";
-      return `
-        <div class="card card-hover fade-in" onclick="loadProfessor('${p.id}','${esc(p.firstName)} ${esc(p.lastName)}')">
-          <div style="padding:16px 18px;display:flex;align-items:center;gap:12px;">
-            ${rankEl}
-            <div class="rating-blob" style="background:${bg};">${rating}</div>
+    const rl = `<svg width="18" height="18" fill="#F76900" viewBox="0 0 24 24"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>`;
+    const redditHtml = isPremium
+      ? (redditPosts.length
+        ? `<div class="card" style="padding:20px;margin-top:10px;"><p style="font-weight:800;font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:7px;">${rl} Reddit Mentions <span class="tag" style="background:#FFF3E8;color:#C03E00;margin-left:2px;">${redditPosts.length}</span></p><div style="display:flex;flex-direction:column;gap:8px;">${redditPosts.slice(0,5).map(post=>`<a href="${esc(post.url)}" target="_blank" rel="noopener" style="display:block;background:#FFFAF7;border-radius:10px;padding:10px 12px;text-decoration:none;border:1.5px solid transparent;transition:border-color .15s;" onmouseover="this.style.borderColor='#FDBA74'" onmouseout="this.style.borderColor='transparent'"><p style="font-size:10px;font-weight:700;color:#F76900;margin-bottom:3px;">r/${esc(post.subreddit)} · ${post.score} pts</p><p style="font-size:13px;font-weight:700;color:#111827;">${esc(post.title)}</p>${post.selftext?`<p style="font-size:11px;color:#6b7280;margin-top:3px;">${esc(post.selftext.slice(0,150))}…</p>`:""}</a>`).join("")}</div></div>`
+        : `<div class="card" style="padding:20px;margin-top:10px;"><p style="font-weight:800;font-size:14px;display:flex;align-items:center;gap:7px;">${rl} Reddit Mentions</p><p style="font-size:13px;color:#b8b0a6;margin-top:6px;">No Reddit posts found.</p></div>`)
+      : `<div class="card" style="padding:20px;margin-top:10px;"><div class="lock-row"><div class="lock-ico">${rl}</div><div><p class="lock-title">Reddit Mentions</p><p class="lock-sub">What students are saying on Reddit.</p></div><a href="/pay" class="unlock-btn">Unlock $1.99</a></div></div>`;
+
+    document.getElementById("profDetail").innerHTML = `
+      <div style="display:flex;flex-direction:column;gap:10px;" class="fade-in">
+        <div class="card" style="padding:22px;">
+          <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;">
+            <div style="width:70px;height:70px;border-radius:18px;background:${bg};display:flex;align-items:center;justify-content:center;font-weight:900;font-size:21px;color:#fff;flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,.12);">${p.avgRating!=null?p.avgRating.toFixed(1):"?"}</div>
             <div style="flex:1;min-width:0;">
-              <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;">
-                <span style="font-weight:800;font-size:15px;">${esc(p.firstName)} ${esc(p.lastName)}</span>
-                ${isEasyA?`<span class="tag" style="background:#DCFCE7;color:#16a34a;">✓ Easy A</span>`:""}
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;">
+                <h2 style="font-size:20px;font-weight:900;letter-spacing:-.5px;">${esc(p.name)}</h2>
+                <a href="${esc(p.rmpUrl)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:3px;background:#FFF3E8;color:#C03E00;border:1px solid #FDBA74;border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700;text-decoration:none;">RMP ↗</a>
               </div>
-              <p style="font-size:11px;color:#b8b0a6;margin-top:2px;">${esc(p.department||"Syracuse University")}</p>
-              <div class="tags">
-                <span class="tag" style="background:#FEF3C7;color:#b45309;">⭐ ${rating}/5</span>
-                <span class="tag" style="background:#F5F5F4;color:${diffColor};">🔥 Diff ${diff}/5</span>
-                <span class="tag" style="background:#F5F5F4;color:#6b7280;">🔁 ${wtag}</span>
-                <span class="tag" style="background:#F5F5F4;color:#9ca3af;">${p.numRatings} reviews</span>
-              </div>
-              <div class="score-bar"><div class="score-fill" style="width:${score}%;background:${barColor};"></div></div>
-              <div style="display:flex;justify-content:space-between;margin-top:3px;">
-                <span style="font-size:10px;color:#d1c8be;">Score</span>
-                <span style="font-size:10px;font-weight:700;color:#9ca3af;">${score}/100</span>
+              <p style="font-size:12px;color:#b8b0a6;">${esc(p.department||"")}</p>
+              <div class="stat-grid">
+                <div class="stat-chip"><div class="v" style="color:${p.avgRating>=4?"#16a34a":p.avgRating>=3?"#d97706":"#dc2626"};">${p.avgRating!=null?p.avgRating.toFixed(1):"—"}</div><div class="l">Rating</div></div>
+                <div class="stat-chip"><div class="v" style="color:${dc};">${p.avgDifficulty!=null?p.avgDifficulty.toFixed(1):"—"}</div><div class="l">Difficulty</div></div>
+                <div class="stat-chip"><div class="v">${wtag!=null?wtag+"%":"—"}</div><div class="l">Retake</div></div>
+                <div class="stat-chip"><div class="v">${p.numRatings??0}</div><div class="l">Reviews</div></div>
               </div>
             </div>
-            <svg width="14" height="14" fill="none" stroke="#d1d5db" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
           </div>
-        </div>`;
-    }
+          ${easyAHtml}${gradeDist}${courses}
+        </div>
+        ${examHtml}
+        <div class="card" style="padding:20px;">
+          <p style="font-weight:800;font-size:14px;margin-bottom:12px;">💬 Student Reviews <span class="tag" style="background:#F5F5F4;color:#6b7280;margin-left:5px;">${isPremium?ratings.length+" total":"3 of "+ratings.length+" free"}</span></p>
+          ${reviewsHtml}${moreReviews}
+        </div>
+        ${redditHtml}
+      </div>`;
+  }
 
-    // ── Professor search ───────────────────────────────────────────────────
-    async function doSearch() {
-      const name = document.getElementById("searchInput").value.trim();
-      if (!name) return;
-      clearDetail();
-      showLoader("searchResults", "Searching Rate My Professors…");
-      try {
-        const res = await fetch(`/api/search?name=${encodeURIComponent(name)}`);
-        const data = await res.json();
-        if (data.error) { showSearchError(data.error); return; }
-        renderSearchResults(data.results);
-      } catch(e) { showSearchError("Network error — try again."); }
-    }
-
-    function renderSearchResults(profs) {
-      const el = document.getElementById("searchResults");
-      if (!profs.length) {
-        el.innerHTML = `<div class="card" style="padding:32px;text-align:center;color:#9ca3af;font-size:14px;">No SU professors found. Try a different name.</div>`;
-        el.classList.remove("hidden"); return;
-      }
-      el.innerHTML = `
-        <p style="font-size:11px;color:#b8b0a6;margin-bottom:8px;">${profs.length} result${profs.length!==1?"s":""} — tap to see full profile</p>
-        <div class="result-list">${profs.map(profCard).join("")}</div>`;
-      el.classList.remove("hidden");
-    }
-
-    function profCard(p) {
-      const rating = p.avgRating != null ? p.avgRating.toFixed(1) : "?";
-      const diff   = p.avgDifficulty != null ? p.avgDifficulty.toFixed(1) : "?";
-      const wtag   = p.wouldTakeAgainPercent >= 0 ? Math.round(p.wouldTakeAgainPercent)+"%" : "N/A";
-      const bg = ratingGrad(p.avgRating);
-      const diffColor = diff<=2?"#16a34a":diff<=3.5?"#d97706":"#dc2626";
-      return `
-        <div class="card card-hover fade-in" onclick="loadProfessor('${p.id}','${esc(p.firstName)} ${esc(p.lastName)}')">
-          <div class="prof-card">
-            <div class="rating-blob" style="background:${bg};">${rating}</div>
-            <div style="flex:1;min-width:0;">
-              <p style="font-weight:800;font-size:15px;">${esc(p.firstName)} ${esc(p.lastName)}</p>
-              <p style="font-size:11px;color:#b8b0a6;margin-top:2px;">${esc(p.department||"Unknown Department")}</p>
-              <div class="tags">
-                <span class="tag" style="background:#FEF3C7;color:#b45309;">⭐ ${rating}/5</span>
-                <span class="tag" style="background:#F5F5F4;color:${diffColor};">Difficulty ${diff}/5</span>
-                <span class="tag" style="background:#F5F5F4;color:#6b7280;">🔁 ${wtag}</span>
-                <span class="tag" style="background:#F5F5F4;color:#9ca3af;">${p.numRatings} reviews</span>
-              </div>
-            </div>
-            <svg width="14" height="14" fill="none" stroke="#d1d5db" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
-          </div>
-        </div>`;
-    }
-
-    // ── Professor detail ───────────────────────────────────────────────────
-    async function loadProfessor(id, name) {
-      showLoader("profDetail", `Loading ${name}…`);
-      document.getElementById("profDetail").classList.remove("hidden");
-      document.getElementById("profDetail").scrollIntoView({behavior:"smooth", block:"start"});
-      try {
-        const res = await fetch(`/api/professor/${encodeURIComponent(id)}`);
-        const data = await res.json();
-        if (data.error) { document.getElementById("profDetail").innerHTML=`<div class="card" style="padding:20px;color:#f87171;">${data.error}</div>`; return; }
-        renderProfDetail(data);
-      } catch(e) { document.getElementById("profDetail").innerHTML=`<div class="card" style="padding:20px;color:#f87171;">Failed to load — try again.</div>`; }
-    }
-
-    function renderProfDetail(data) {
-      const { professor:p, ratings, easyA, examMentions, redditPosts, isPremium } = data;
-      const bg = ratingGrad(p.avgRating);
-      const wtag = p.wouldTakeAgainPercent >= 0 ? Math.round(p.wouldTakeAgainPercent) : null;
-      const diffColor = !p.avgDifficulty?"#9ca3af":p.avgDifficulty<=2?"#16a34a":p.avgDifficulty<=3.5?"#d97706":"#dc2626";
-
-      // Easy A
-      let easyAHtml = "";
-      if (isPremium && easyA) {
-        easyAHtml = easyA.is_easy_a
-          ? `<div style="background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:12px;padding:13px 15px;display:flex;gap:10px;align-items:center;margin-top:16px;">
-               <span style="font-size:22px;">✅</span>
-               <div><p style="font-weight:800;color:#15803d;font-size:13px;">Likely an Easy A</p><p style="color:#16a34a;font-size:11px;margin-top:2px;">${easyA.reasons.join(" · ")}</p></div>
-             </div>`
-          : `<div style="background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:12px;padding:13px 15px;display:flex;gap:10px;align-items:center;margin-top:16px;">
-               <span style="font-size:22px;">⚠️</span>
-               <div><p style="font-weight:800;color:#b45309;font-size:13px;">Not an Easy A</p><p style="color:#d97706;font-size:11px;margin-top:2px;">${easyA.reasons.length?easyA.reasons.join(" · "):"Moderate to high difficulty"}</p></div>
-             </div>`;
-      } else if (!isPremium) {
-        easyAHtml = `<div class="lock-card" style="margin-top:16px;">
-          <div class="lock-row">
-            <div class="lock-icon-wrap">🔒</div>
-            <div><p class="lock-title">Easy A Score</p><p class="lock-sub">Find out if this professor is an easy grader.</p></div>
-            <a href="/pay" class="unlock-btn">Unlock $1.99</a>
-          </div>
-        </div>`;
-      }
-
-      // Grade distribution
-      const gradeDist = isPremium && easyA && Object.keys(easyA.grade_distribution||{}).length
-        ? `<div style="margin-top:16px;"><p class="section-label" style="margin-bottom:8px;">Grade Distribution</p>
-           <div style="display:flex;flex-wrap:wrap;gap:6px;">
-             ${Object.entries(easyA.grade_distribution).sort((a,b)=>b[1]-a[1]).map(([g,c])=>`
-               <div style="background:#FFF8F2;border:1px solid #F0E8E0;border-radius:8px;padding:7px 12px;text-align:center;">
-                 <div style="font-weight:800;font-size:14px;">${esc(g)}</div>
-                 <div style="font-size:10px;color:#b8b0a6;margin-top:1px;">${c}x</div>
-               </div>`).join("")}
-           </div></div>` : "";
-
-      // Courses
-      const courses = p.courseCodes?.length
-        ? `<div style="margin-top:16px;"><p class="section-label" style="margin-bottom:8px;">Courses Taught</p>
-           <div style="display:flex;flex-wrap:wrap;gap:5px;">
-             ${p.courseCodes.slice(0,12).map(c=>`<span class="tag" style="background:#FFF3E8;color:#C03E00;border:1px solid #FDBA74;">${esc(c.courseName)} <span style="color:#FDBA74;margin-left:3px;">${c.courseCount}</span></span>`).join("")}
-           </div></div>` : "";
-
-      // Reviews
-      const shownRatings = isPremium ? ratings : ratings.slice(0,3);
-      const reviewsHtml = shownRatings.length
-        ? shownRatings.map(r => {
-            const good = isPremium && r.wouldTakeAgain===true;
-            const bad  = isPremium && r.wouldTakeAgain===false;
-            return `<div class="review-item ${good?"good":bad?"bad":""}">
-              <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:6px;margin-bottom:8px;">
-                <div class="tags">
-                  ${r.class?`<span class="tag" style="background:#FFF3E8;color:#C03E00;">${esc(r.class)}</span>`:""}
-                  ${r.grade?`<span class="tag" style="background:#EEF2FF;color:#4f46e5;">Grade: ${esc(r.grade)}</span>`:""}
-                  ${isPremium&&r.wouldTakeAgain===true?`<span class="tag" style="background:#F0FDF4;color:#16a34a;">Would retake ✓</span>`:""}
-                  ${isPremium&&r.wouldTakeAgain===false?`<span class="tag" style="background:#FEF2F2;color:#dc2626;">Wouldn't retake</span>`:""}
-                </div>
-                <div style="display:flex;gap:8px;font-size:10px;color:#b8b0a6;">
-                  <span>Helpful ${r.helpfulRating}/5</span>
-                  <span>Clarity ${r.clarityRating}/5</span>
-                  <span style="color:${r.difficultyRating<=2?"#16a34a":r.difficultyRating<=3.5?"#d97706":"#dc2626"};">Diff ${r.difficultyRating}/5</span>
-                </div>
-              </div>
-              ${r.comment?`<p style="font-size:13px;color:#374151;font-style:italic;line-height:1.55;">"${esc(r.comment)}"</p>`:`<p style="font-size:12px;color:#b8b0a6;font-style:italic;">No comment left.</p>`}
-            </div>`;
-          }).join("")
-        : `<p style="font-size:13px;color:#b8b0a6;">No reviews yet.</p>`;
-
-      const moreReviews = !isPremium && ratings.length > 3
-        ? `<div class="lock-card" style="margin-top:10px;padding:16px;">
-             <p style="font-weight:700;font-size:13px;color:#374151;">🔒 ${ratings.length-3} more review${ratings.length-3!==1?"s":""} behind Premium</p>
-             <a href="/pay" style="display:inline-block;margin-top:10px;background:linear-gradient(135deg,#F76900,#C03E00);color:#fff;font-size:12px;font-weight:800;padding:8px 20px;border-radius:10px;text-decoration:none;">See All Reviews — $1.99</a>
-           </div>` : "";
-
-      // Exam mentions
-      const examHtml = isPremium
-        ? (examMentions.length
-          ? `<div class="card" style="padding:20px;margin-top:10px;">
-               <p style="font-weight:800;font-size:14px;margin-bottom:12px;">📝 Exam & Test Mentions <span class="tag" style="background:#DBEAFE;color:#2563eb;margin-left:4px;">${examMentions.length} reviews</span></p>
-               <div style="display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;">
-                 ${examMentions.slice(0,8).map(m=>`
-                   <div style="background:#FFFAF7;border-radius:10px;padding:10px 12px;">
-                     <p style="font-size:10px;font-weight:700;color:#b8b0a6;margin-bottom:4px;">${m.class||"Unknown Course"}</p>
-                     <p style="font-size:13px;color:#374151;font-style:italic;">"${esc(m.comment)}"</p>
-                     <div class="tags" style="margin-top:5px;">${m.keywords.map(k=>`<span class="tag" style="background:#DBEAFE;color:#3b82f6;">${k}</span>`).join("")}</div>
-                   </div>`).join("")}
-               </div></div>`
-          : `<div class="card" style="padding:20px;margin-top:10px;">
-               <p style="font-weight:800;font-size:14px;">📝 Exam & Test Mentions</p>
-               <p style="font-size:13px;color:#b8b0a6;margin-top:6px;">No exam mentions found in recent reviews.</p>
-             </div>`)
-        : `<div class="card" style="padding:20px;margin-top:10px;">
-             <div class="lock-row">
-               <div class="lock-icon-wrap">📝</div>
-               <div><p class="lock-title">Exam & Test Mentions</p><p class="lock-sub">See which reviews mention midterms, finals, and quizzes.</p></div>
-               <a href="/pay" class="unlock-btn">Unlock $1.99</a>
-             </div>
-           </div>`;
-
-      // Reddit
-      const redditLogo = `<svg width="18" height="18" fill="#F76900" viewBox="0 0 24 24"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>`;
-      const redditHtml = isPremium
-        ? (redditPosts.length
-          ? `<div class="card" style="padding:20px;margin-top:10px;">
-               <p style="font-weight:800;font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:7px;">
-                 ${redditLogo} Reddit Mentions <span class="tag" style="background:#FFF3E8;color:#C03E00;margin-left:2px;">${redditPosts.length} posts</span>
-               </p>
-               <div style="display:flex;flex-direction:column;gap:8px;">
-                 ${redditPosts.slice(0,5).map(post=>`
-                   <a href="${esc(post.url)}" target="_blank" rel="noopener"
-                      style="display:block;background:#FFFAF7;border-radius:10px;padding:10px 12px;text-decoration:none;border:1.5px solid transparent;transition:border-color 0.15s;"
-                      onmouseover="this.style.borderColor='#FDBA74'" onmouseout="this.style.borderColor='transparent'">
-                     <p style="font-size:10px;font-weight:700;color:#F76900;margin-bottom:4px;">r/${esc(post.subreddit)} · ${post.score} pts · ${post.num_comments} comments</p>
-                     <p style="font-size:13px;font-weight:700;color:#111827;">${esc(post.title)}</p>
-                     ${post.selftext?`<p style="font-size:11px;color:#6b7280;margin-top:3px;">${esc(post.selftext.slice(0,160))}…</p>`:""}
-                   </a>`).join("")}
-               </div></div>`
-          : `<div class="card" style="padding:20px;margin-top:10px;">
-               <p style="font-weight:800;font-size:14px;display:flex;align-items:center;gap:7px;">${redditLogo} Reddit Mentions</p>
-               <p style="font-size:13px;color:#b8b0a6;margin-top:6px;">No Reddit posts found for this professor.</p>
-             </div>`)
-        : `<div class="card" style="padding:20px;margin-top:10px;">
-             <div class="lock-row">
-               <div class="lock-icon-wrap">${redditLogo}</div>
-               <div><p class="lock-title">Reddit Mentions</p><p class="lock-sub">What SU students are really saying on r/Syracuse.</p></div>
-               <a href="/pay" class="unlock-btn">Unlock $1.99</a>
-             </div>
-           </div>`;
-
-      document.getElementById("profDetail").innerHTML = `
-        <div style="display:flex;flex-direction:column;gap:10px;" class="fade-in">
-
-          <!-- Profile card -->
-          <div class="card" style="padding:22px;">
-            <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;">
-              <div style="width:72px;height:72px;border-radius:18px;background:${bg};display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;color:white;flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,0.12);">
-                ${p.avgRating!=null?p.avgRating.toFixed(1):"?"}
-              </div>
-              <div style="flex:1;min-width:0;">
-                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;">
-                  <h2 style="font-size:20px;font-weight:900;letter-spacing:-0.5px;">${esc(p.name)}</h2>
-                  <a href="${esc(p.rmpUrl)}" target="_blank" rel="noopener" class="rmp-link">RMP ↗</a>
-                  <span class="tag ${isPremium?"badge-premium":"badge-free"}">${isPremium?"⭐ Premium":"Free"}</span>
-                </div>
-                <p style="font-size:12px;color:#b8b0a6;">${esc(p.department||"Syracuse University")}</p>
-                <div class="stat-grid">
-                  <div class="stat-chip"><div class="v" style="color:${p.avgRating>=4?"#16a34a":p.avgRating>=3?"#d97706":"#dc2626"};">${p.avgRating!=null?p.avgRating.toFixed(1):"—"}</div><div class="l">Rating</div></div>
-                  <div class="stat-chip"><div class="v" style="color:${diffColor};">${p.avgDifficulty!=null?p.avgDifficulty.toFixed(1):"—"}</div><div class="l">Difficulty</div></div>
-                  <div class="stat-chip"><div class="v">${wtag!=null?wtag+"%":"—"}</div><div class="l">Retake</div></div>
-                  <div class="stat-chip"><div class="v">${p.numRatings??0}</div><div class="l">Reviews</div></div>
-                </div>
-              </div>
-            </div>
-            ${easyAHtml}
-            ${gradeDist}
-            ${courses}
-          </div>
-
-          ${examHtml}
-
-          <!-- Reviews -->
-          <div class="card" style="padding:20px;">
-            <p style="font-weight:800;font-size:14px;margin-bottom:12px;">
-              💬 Student Reviews
-              <span class="tag" style="background:#F5F5F4;color:#6b7280;margin-left:6px;">${isPremium?ratings.length+" total":"3 of "+ratings.length+" free"}</span>
-            </p>
-            ${reviewsHtml}
-            ${moreReviews}
-          </div>
-
-          ${redditHtml}
-
-        </div>`;
-    }
-
-    // ── Helpers ────────────────────────────────────────────────────────────
-    function ratingGrad(r) {
-      if (r == null) return "#d1d5db";
-      if (r >= 4.0) return "linear-gradient(135deg,#22c55e,#16a34a)";
-      if (r >= 3.0) return "linear-gradient(135deg,#fbbf24,#f59e0b)";
-      if (r >= 2.0) return "linear-gradient(135deg,#fb923c,#ea580c)";
-      return "linear-gradient(135deg,#f87171,#dc2626)";
-    }
-
-    function showLoader(id, msg) {
-      const el = document.getElementById(id);
-      el.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:48px 0;color:#b8b0a6;">
-          <svg class="spinner" width="18" height="18" fill="none" viewBox="0 0 24 24" style="color:#F76900;">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity=".2"/>
-            <path fill="currentColor" opacity=".8" d="M4 12a8 8 0 018-8v8z"/>
-          </svg>
-          <span style="font-size:13px;">${msg}</span>
-        </div>`;
-      el.classList.remove("hidden");
-    }
-
-    function clearDetail() {
-      const el = document.getElementById("profDetail");
-      el.innerHTML = ""; el.classList.add("hidden");
-    }
-
-    function showSearchError(msg) {
-      const el = document.getElementById("searchResults");
-      el.innerHTML = `<div class="card" style="padding:16px;color:#f87171;font-size:13px;">${msg}</div>`;
-      el.classList.remove("hidden");
-    }
-
-    function esc(s) {
-      if (!s) return "";
-      return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-    }
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function rGrad(r) {
+    if (r==null) return "#d1d5db";
+    if (r>=4) return "linear-gradient(135deg,#22c55e,#16a34a)";
+    if (r>=3) return "linear-gradient(135deg,#fbbf24,#f59e0b)";
+    if (r>=2) return "linear-gradient(135deg,#fb923c,#ea580c)";
+    return "linear-gradient(135deg,#f87171,#dc2626)";
+  }
+  function showLoader(id,msg) {
+    const el=document.getElementById(id);
+    el.innerHTML=`<div style="display:flex;align-items:center;justify-content:center;gap:10px;padding:48px 0;color:#b8b0a6;"><svg class="spinner" width="18" height="18" fill="none" viewBox="0 0 24 24" style="color:#F76900;"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="3" opacity=".2"/><path fill="currentColor" opacity=".8" d="M4 12a8 8 0 018-8v8z"/></svg><span style="font-size:13px;">${msg}</span></div>`;
+    el.classList.remove("hidden");
+  }
+  function clearDetail() { const el=document.getElementById("profDetail"); el.innerHTML=""; el.classList.add("hidden"); }
+  function showError(msg) { const el=document.getElementById("searchResults"); el.innerHTML=`<div class="card" style="padding:16px;color:#f87171;font-size:13px;">${msg}</div>`; el.classList.remove("hidden"); }
+  function esc(s) { if(!s)return""; return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
   </script>
 </body>
 </html>
