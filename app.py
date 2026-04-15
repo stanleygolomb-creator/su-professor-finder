@@ -1,5 +1,7 @@
 from flask import Flask, request, jsonify, render_template, redirect, make_response, session
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 import threading
 import os
 import bcrypt
@@ -11,6 +13,13 @@ import auth
 app = Flask(__name__)
 app.secret_key = os.environ.get("FLASK_SECRET", os.urandom(24))
 CORS(app)
+
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=["200 per hour"],
+    storage_uri="memory://",
+)
 
 ADMIN_USER      = os.environ.get("ADMIN_USER", "")
 ADMIN_PASS_HASH = os.environ.get("ADMIN_PASS_HASH", "")
@@ -212,15 +221,23 @@ def school_search():
 
 
 @app.route("/api/search")
+@limiter.limit("60 per minute")
 def search():
-    if not _is_premium(request):
-        return jsonify({"error": "premium_required"}), 403
     name      = request.args.get("name", "").strip()
     school_id = request.args.get("school_id", "").strip() or None
     if not name or len(name) < 2:
         return jsonify({"error": "Please enter a professor name"}), 400
     try:
-        return jsonify({"results": rmp.search_professors(name, school_id)})
+        results  = rmp.search_professors(name, school_id)
+        premium  = _is_premium(request)
+        if premium:
+            return jsonify({"results": results, "truncated": False})
+        # Free: show first 3 as teaser, signal there are more
+        return jsonify({
+            "results":   results[:3],
+            "truncated": len(results) > 3,
+            "total":     len(results),
+        })
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
@@ -233,7 +250,15 @@ def index_status():
 
 # ── Premium routes ────────────────────────────────────────────────────────────
 
+@app.route("/api/trending")
+def trending():
+    school_id = request.args.get("school_id", "").strip()
+    results   = auth.get_trending_professors(school_id, limit=8)
+    return jsonify({"trending": results})
+
+
 @app.route("/api/course")
+@limiter.limit("30 per minute")
 def course_search():
     course    = request.args.get("course", "").strip()
     school_id = request.args.get("school_id", "").strip() or None
@@ -248,6 +273,7 @@ def course_search():
 
 
 @app.route("/api/professor/<professor_id>")
+@limiter.limit("120 per minute")
 def professor_detail(professor_id):
     try:
         data = rmp.get_professor_ratings(professor_id)
@@ -269,6 +295,13 @@ def professor_detail(professor_id):
         }
 
         premium = _is_premium(request)
+
+        # Track view for trending
+        school_id = request.args.get("school_id", "")
+        auth.record_professor_view(
+            professor_id, school_id, full_name,
+            data.get("department", ""), data.get("avgRating")
+        )
 
         # Check if this professor is bookmarked by the current user
         user = auth.get_current_user(request)

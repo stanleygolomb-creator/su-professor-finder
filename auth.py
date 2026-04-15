@@ -47,7 +47,57 @@ def init_db():
                 FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
             )
         """)
+        c.execute("""
+            CREATE TABLE IF NOT EXISTS professor_views (
+                prof_id    TEXT    NOT NULL,
+                school_id  TEXT    NOT NULL DEFAULT '',
+                name       TEXT,
+                dept       TEXT,
+                rating     REAL,
+                views      INTEGER DEFAULT 1,
+                last_seen  TEXT    DEFAULT (datetime('now')),
+                PRIMARY KEY (prof_id, school_id)
+            )
+        """)
         c.commit()
+
+
+# ── Professor view tracking ───────────────────────────────────────────────────
+
+def record_professor_view(prof_id: str, school_id: str, name: str = "", dept: str = "", rating=None):
+    """Upsert a view for this professor — called every time their detail is loaded."""
+    try:
+        with _db() as c:
+            c.execute("""
+                INSERT INTO professor_views (prof_id, school_id, name, dept, rating, views, last_seen)
+                VALUES (?, ?, ?, ?, ?, 1, datetime('now'))
+                ON CONFLICT(prof_id, school_id) DO UPDATE SET
+                    views    = views + 1,
+                    last_seen = datetime('now'),
+                    name     = excluded.name,
+                    dept     = excluded.dept,
+                    rating   = excluded.rating
+            """, (prof_id, school_id, name, dept, rating))
+            c.commit()
+    except Exception:
+        pass
+
+
+def get_trending_professors(school_id: str = "", limit: int = 8) -> list:
+    """Return top professors by view count for this school in the last 14 days."""
+    try:
+        with _db() as c:
+            rows = c.execute("""
+                SELECT prof_id, name, dept, rating, views
+                FROM professor_views
+                WHERE school_id = ?
+                  AND last_seen >= datetime('now', '-14 days')
+                ORDER BY views DESC
+                LIMIT ?
+            """, (school_id, limit)).fetchall()
+        return [dict(r) for r in rows]
+    except Exception:
+        return []
 
 
 # ── Users ─────────────────────────────────────────────────────────────────────

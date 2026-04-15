@@ -221,6 +221,165 @@
     .user-menu-item:hover { background: #F5F0EB; }
     .user-menu-item.danger { color: #ef4444; }
     .user-menu-item.danger:hover { background: #FEF2F2; }
+
+    /* ── Skeleton loaders ── */
+    @keyframes shimmer { 0%{background-position:-400px 0} 100%{background-position:400px 0} }
+    .skeleton-wrap { display: flex; flex-direction: column; gap: 10px; }
+    .sk-card { background: #fff; border-radius: 16px; padding: 18px 20px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+    .sk-line {
+      background: linear-gradient(90deg,#f0ebe5 25%,#f9f6f2 50%,#f0ebe5 75%);
+      background-size: 800px 100%; animation: shimmer 1.4s infinite; border-radius: 6px;
+    }
+    .sk-circle { border-radius: 50%; flex-shrink: 0; }
+
+    /* ── Filter bar ── */
+    .filter-bar {
+      display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+      margin-bottom: 12px; padding: 10px 14px;
+      background: #fff; border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.05);
+    }
+    .filter-bar .fb-label { font-size: 11px; font-weight: 700; color: #b8b0a6; text-transform: uppercase; letter-spacing: .06em; flex-shrink: 0; }
+    .filter-select {
+      border: 1.5px solid #F0EBE5; border-radius: 8px; padding: 5px 10px;
+      font-size: 12px; font-family: 'Inter',sans-serif; font-weight: 600; color: #374151;
+      background: #FFFAF7; outline: none; cursor: pointer; transition: border-color .12s;
+    }
+    .filter-select:focus { border-color: var(--p1); }
+    .dept-filter { max-width: 160px; }
+    .filter-count { margin-left: auto; font-size: 11px; color: #b8b0a6; }
+
+    /* ── Compare ── */
+    .compare-btn {
+      background: none; border: 1.5px solid #e5e7eb; border-radius: 8px;
+      padding: 4px 9px; font-size: 11px; font-weight: 700; color: #9ca3af;
+      cursor: pointer; transition: all .12s; white-space: nowrap; font-family: 'Inter',sans-serif;
+    }
+    .compare-btn:hover { border-color: var(--p1); color: var(--p1); }
+    .compare-btn.selected { background: var(--p1); border-color: var(--p1); color: #fff; }
+    .compare-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 500;
+      background: #fff; border-top: 1.5px solid #F0EBE5;
+      box-shadow: 0 -4px 24px rgba(0,0,0,.12);
+      padding: 14px 20px; display: flex; align-items: center; gap: 12px;
+      transform: translateY(100%); transition: transform .25s ease;
+    }
+    .compare-bar.show { transform: translateY(0); }
+    .compare-slot {
+      flex: 1; min-width: 0; background: #FFFAF7; border: 1.5px solid #F0EBE5;
+      border-radius: 10px; padding: 8px 12px; font-size: 12px; font-weight: 700;
+      color: #374151; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .compare-slot.empty { color: #d1d5db; border-style: dashed; }
+    .compare-go-btn {
+      background: linear-gradient(135deg,var(--p2),var(--p1)); color: #fff;
+      font-weight: 800; font-size: 13px; font-family: 'Inter',sans-serif;
+      padding: 10px 20px; border-radius: 10px; border: none; cursor: pointer;
+      white-space: nowrap; flex-shrink: 0;
+    }
+    .compare-go-btn:disabled { opacity: .45; cursor: default; }
+    .compare-clear { font-size: 12px; color: #9ca3af; cursor: pointer; flex-shrink: 0; }
+    .compare-clear:hover { color: #ef4444; }
+    .compare-modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,.6); backdrop-filter: blur(4px);
+      z-index: 900; display: flex; align-items: flex-start; justify-content: center;
+      padding: 20px; overflow-y: auto;
+    }
+    .compare-modal {
+      background: #FFFAF5; border-radius: 22px; padding: 28px 24px; max-width: 860px;
+      width: 100%; box-shadow: 0 24px 64px rgba(0,0,0,.22); position: relative; margin: auto;
+    }
+    .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 20px; }
+    @media(max-width:560px){ .compare-grid { grid-template-columns: 1fr; } }
+    .compare-col { background: #fff; border-radius: 16px; padding: 20px; box-shadow: 0 1px 4px rgba(0,0,0,.06); }
+    .compare-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #F5F0EB; font-size: 13px; }
+    .compare-row:last-child { border-bottom: none; }
+    .compare-row .cr-label { color: #9ca3af; font-weight: 600; }
+    .compare-row .cr-val   { font-weight: 800; }
+    .winner { color: #16a34a; }
+    .loser  { color: #9ca3af; }
+
+    /* ── Trending section ── */
+    .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .section-head h3 { font-size: 14px; font-weight: 800; letter-spacing: -.2px; }
+    .trending-list { display: flex; flex-direction: column; gap: 8px; }
+    .trending-item {
+      display: flex; align-items: center; gap: 11px; padding: 11px 14px;
+      background: #fff; border-radius: 12px; cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,.05); transition: transform .12s;
+    }
+    .trending-item:hover { transform: translateY(-1px); box-shadow: 0 3px 10px rgba(0,0,0,.08); }
+    .trending-rank { font-size: 16px; width: 24px; text-align: center; flex-shrink: 0; }
+    .trending-fire { color: #f97316; font-size: 12px; font-weight: 700; }
+
+    /* ── Recently viewed ── */
+    .recent-scroll { display: flex; gap: 9px; overflow-x: auto; padding-bottom: 4px; }
+    .recent-scroll::-webkit-scrollbar { display: none; }
+    .recent-chip {
+      flex-shrink: 0; background: #fff; border: 1.5px solid #F0EBE5; border-radius: 999px;
+      padding: 7px 14px; font-size: 12px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; gap: 7px; transition: border-color .12s;
+      white-space: nowrap;
+    }
+    .recent-chip:hover { border-color: var(--p1); color: var(--p1); }
+    .recent-rating { font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 999px; color: #fff; }
+
+    /* ── Premium teaser gate ── */
+    .teaser-gate {
+      position: relative; margin-top: 8px;
+    }
+    .teaser-blur {
+      filter: blur(3px); pointer-events: none; user-select: none; opacity: .6;
+    }
+    .teaser-overlay {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 8px;
+      background: linear-gradient(to bottom, rgba(255,250,245,0) 0%, rgba(255,250,245,.9) 40%, rgba(255,250,245,1) 100%);
+      border-radius: 12px; padding: 20px;
+    }
+    .teaser-cta {
+      background: linear-gradient(135deg,var(--p2),var(--p1)); color: #fff;
+      font-weight: 800; font-size: 13px; font-family: 'Inter',sans-serif;
+      padding: 11px 22px; border-radius: 10px; border: none; cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0,0,0,.15);
+    }
+
+    /* ── Prof card v2 ── */
+    .prof-card {
+      background: #fff; border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 16px rgba(0,0,0,.04);
+      overflow: hidden; cursor: pointer; transition: transform .15s, box-shadow .15s;
+    }
+    .prof-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,.08), 0 16px 40px rgba(0,0,0,.08); }
+    .prof-card-body { padding: 15px 16px; display: flex; align-items: center; gap: 12px; }
+    .rating-pill {
+      width: 52px; height: 52px; border-radius: 14px; flex-shrink: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      color: #fff; font-weight: 900;
+    }
+    .rating-pill .rp-num { font-size: 18px; line-height: 1; }
+    .rating-pill .rp-max { font-size: 9px; opacity: .75; margin-top: 1px; }
+    .mini-bar { height: 3px; background: #F0EBE5; border-radius: 2px; margin-top: 6px; overflow: hidden; }
+    .mini-bar-fill { height: 100%; border-radius: 2px; }
+
+    /* ── Share btn ── */
+    .share-btn {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: #F5F0EB; border: none; border-radius: 8px;
+      padding: 5px 11px; font-size: 11px; font-weight: 700; color: #6b7280;
+      cursor: pointer; font-family: 'Inter',sans-serif; transition: background .12s;
+    }
+    .share-btn:hover { background: #EDE8E2; }
+    .share-btn.copied { color: #16a34a; background: #F0FDF4; }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: #111827; color: #fff; font-size: 13px; font-weight: 600;
+      padding: 10px 20px; border-radius: 999px; z-index: 999;
+      opacity: 0; transition: opacity .2s, transform .2s; pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
   </style>
 </head>
 <body>
@@ -329,9 +488,32 @@
 
   <!-- ── RESULTS ── -->
   <div class="content">
-    <div id="searchResults" class="hidden" style="margin-top:4px;"></div>
-    <div id="profDetail"    class="hidden" style="margin-top:12px;"></div>
+    <div id="trendingSection" style="margin-top:18px;"></div>
+    <div id="recentSection"   style="margin-top:14px;"></div>
+    <div id="searchResults"   class="hidden" style="margin-top:4px;"></div>
+    <div id="profDetail"      class="hidden" style="margin-top:12px;"></div>
   </div>
+
+  <!-- ── COMPARE BAR ── -->
+  <div class="compare-bar" id="compareBar">
+    <div class="compare-slot empty" id="cSlot0">Select a professor…</div>
+    <div style="font-size:16px;color:#d1d5db;flex-shrink:0;">vs</div>
+    <div class="compare-slot empty" id="cSlot1">Select a professor…</div>
+    <button class="compare-go-btn" id="compareGoBtn" onclick="openCompareModal()" disabled>Compare</button>
+    <span class="compare-clear" onclick="clearCompare()">✕ Clear</span>
+  </div>
+
+  <!-- ── COMPARE MODAL ── -->
+  <div class="compare-modal-overlay hidden" id="compareModal" onclick="if(event.target===this)closeCompareModal()">
+    <div class="compare-modal">
+      <button onclick="closeCompareModal()" style="position:absolute;top:14px;right:16px;background:#f3f4f6;border:none;border-radius:50%;width:28px;height:28px;cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:#6b7280;">✕</button>
+      <h2 style="font-size:18px;font-weight:900;letter-spacing:-.4px;">Side-by-Side Comparison</h2>
+      <div class="compare-grid" id="compareContent"></div>
+    </div>
+  </div>
+
+  <!-- ── TOAST ── -->
+  <div class="toast" id="toast"></div>
 
 <script>
 // ── College data with colors ────────────────────────────────────────────────
@@ -468,6 +650,9 @@ let bookmarkSet = new Set(); // ref_ids the user has bookmarked
   if (currentUser) loadBookmarkSet();
   // Resolve school ID if loaded from localStorage without one
   if (!SCHOOL.id) resolveSchoolId(SCHOOL);
+  // Load trending + recent on startup
+  renderRecent();
+  loadTrending();
 })();
 
 function renderHeader() {
@@ -554,8 +739,10 @@ function setTab(tab) {
   document.getElementById("searchResults").innerHTML = "";
   document.getElementById("searchResults").classList.add("hidden");
   clearDetail();
-  if (tab==="course")  renderCourseArea();
-  if (tab==="saved")   renderSaved();
+  if (tab==="course")    renderCourseArea();
+  if (tab==="saved")     renderSaved();
+  if (tab==="professor") { renderRecent(); loadTrending(); }
+  else { document.getElementById("trendingSection").innerHTML=""; document.getElementById("recentSection").innerHTML=""; }
 }
 function cap(s) { return s[0].toUpperCase()+s.slice(1); }
 
@@ -714,39 +901,134 @@ async function doSearch() {
   try {
     const res=await fetch(`/api/search?name=${encodeURIComponent(name)}&school_id=${encodeURIComponent(sid)}`);
     const data=await res.json();
-    if(data.error==="premium_required"){showError('🔒 Professor search requires <a href="/pay" style="color:var(--p1);font-weight:700;">Premium — $1.99</a>');return;}
     if(data.error){showError(data.error);return;}
-    renderProfList(data.results);
+    renderProfList(data.results, data.truncated, data.total);
   } catch(e){showError("Network error.");}
 }
 
-function renderProfList(profs) {
-  const el=document.getElementById("searchResults");
-  if(!profs.length){el.innerHTML=`<div class="card" style="padding:32px;text-align:center;color:#9ca3af;font-size:14px;">No professors found. Try a different name.</div>`;el.classList.remove("hidden");return;}
-  el.innerHTML=`<p style="font-size:11px;color:#b8b0a6;margin-bottom:8px;">${profs.length} result${profs.length!==1?"s":""} — tap to expand</p><div class="result-list">${profs.map(profCard).join("")}</div>`;
+// ── All search results + filter state ────────────────────────────────────
+let _allResults = [];
+let _resultsTruncated = false;
+let _resultsTotal = 0;
+
+function renderProfList(profs, truncated=false, total=0) {
+  _allResults = profs;
+  _resultsTruncated = truncated;
+  _resultsTotal = total;
+  _renderFilteredProfs();
+}
+
+function _renderFilteredProfs() {
+  const el = document.getElementById("searchResults");
+  if (!_allResults.length) {
+    el.innerHTML = `<div class="card" style="padding:32px;text-align:center;color:#9ca3af;font-size:14px;">No professors found. Try a different name or check spelling.</div>`;
+    el.classList.remove("hidden"); return;
+  }
+  const sort = document.getElementById("sortSelect")?.value || "rating";
+  const dept = document.getElementById("deptSelect")?.value  || "";
+  let profs = [..._allResults];
+  if (dept) profs = profs.filter(p => (p.department||"").toLowerCase().includes(dept.toLowerCase()));
+  if (sort === "rating")     profs.sort((a,b) => (b.avgRating||0)-(a.avgRating||0));
+  else if (sort === "easy")  profs.sort((a,b) => (a.avgDifficulty||5)-(b.avgDifficulty||5));
+  else if (sort === "retake") profs.sort((a,b) => (b.wouldTakeAgainPercent||0)-(a.wouldTakeAgainPercent||0));
+  else if (sort === "reviews") profs.sort((a,b) => (b.numRatings||0)-(a.numRatings||0));
+  else if (sort === "name")   profs.sort((a,b) => (a.lastName||"").localeCompare(b.lastName||""));
+
+  // Build department options from current full results
+  const depts = [...new Set(_allResults.map(p=>p.department||"").filter(Boolean))].sort();
+
+  el.innerHTML = `
+    <div class="filter-bar fade-in">
+      <span class="fb-label">Sort</span>
+      <select class="filter-select" id="sortSelect" onchange="_renderFilteredProfs()">
+        <option value="rating" ${sort==="rating"?"selected":""}>⭐ Highest Rated</option>
+        <option value="easy"   ${sort==="easy"?"selected":""}>🍃 Easiest</option>
+        <option value="retake" ${sort==="retake"?"selected":""}>🔁 Most Retake</option>
+        <option value="reviews" ${sort==="reviews"?"selected":""}>💬 Most Reviews</option>
+        <option value="name"   ${sort==="name"?"selected":""}>🔤 Name A–Z</option>
+      </select>
+      ${depts.length > 1 ? `
+      <span class="fb-label" style="margin-left:4px;">Dept</span>
+      <select class="filter-select dept-filter" id="deptSelect" onchange="_renderFilteredProfs()">
+        <option value="">All Departments</option>
+        ${depts.map(d=>`<option value="${esc(d)}" ${dept===d?"selected":""}>${esc(d)}</option>`).join("")}
+      </select>` : ""}
+      <span class="filter-count">${profs.length} of ${_allResults.length} result${_allResults.length!==1?"s":""}</span>
+    </div>
+    <div class="result-list">${profs.map(profCard).join("")}</div>
+    ${_resultsTruncated ? `
+    <div class="teaser-gate">
+      <div style="margin-top:8px;">
+        ${[...Array(2)].map(()=>`<div class="sk-card" style="margin-bottom:8px;"><div style="display:flex;gap:12px;align-items:center;"><div class="sk-line sk-circle" style="width:52px;height:52px;"></div><div style="flex:1;"><div class="sk-line" style="height:14px;width:60%;margin-bottom:8px;"></div><div class="sk-line" style="height:11px;width:40%;"></div></div></div></div>`).join("")}
+      </div>
+      <div class="teaser-overlay">
+        <p style="font-weight:800;font-size:15px;color:#111827;">+${_resultsTotal-3} more professors found</p>
+        <p style="font-size:12px;color:#9ca3af;margin-bottom:4px;">Unlock all results, full reviews, Easy A scores &amp; Reddit mentions</p>
+        <button class="teaser-cta" onclick="location.href='/pay'">See All Results — $1.99 one-time</button>
+      </div>
+    </div>` : ""}
+  `;
   el.classList.remove("hidden");
 }
 
 function profCard(p) {
-  const rating=p.avgRating!=null?p.avgRating.toFixed(1):"?";
-  const diff=p.avgDifficulty!=null?p.avgDifficulty.toFixed(1):"?";
-  const wtag=p.wouldTakeAgainPercent>=0?Math.round(p.wouldTakeAgainPercent)+"%":"N/A";
-  const bg=rGrad(p.avgRating);
-  const dc=diff<=2?"#16a34a":diff<=3.5?"#d97706":"#dc2626";
-  const name=`${p.firstName} ${p.lastName}`;
-  return `<div class="card fade-in" style="display:flex;align-items:center;"><div class="card-hover" style="flex:1;min-width:0;" onclick="loadProfessor('${p.id}','${esc(name)}')"><div style="padding:14px 16px;display:flex;align-items:center;gap:13px;"><div class="blob-r" style="background:${bg};">${rating}</div><div style="flex:1;min-width:0;"><p style="font-weight:800;font-size:15px;">${esc(name)}</p><p style="font-size:11px;color:#b8b0a6;margin-top:2px;">${esc(p.department||"")}</p><div class="tags"><span class="tag" style="background:#FEF3C7;color:#b45309;">⭐ ${rating}/5</span><span class="tag" style="background:#F5F5F4;color:${dc};">Difficulty ${diff}/5</span><span class="tag" style="background:#F5F5F4;color:#6b7280;">🔁 ${wtag}</span><span class="tag" style="background:#F5F5F4;color:#9ca3af;">${p.numRatings} reviews</span></div></div><svg width="13" height="13" fill="none" stroke="#d1d5db" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg></div></div><div style="padding:0 14px 0 0;">${bmHtml(p.id, name, p.department, p.avgRating)}</div></div>`;
+  const rating = p.avgRating != null ? p.avgRating.toFixed(1) : "?";
+  const diff   = p.avgDifficulty != null ? p.avgDifficulty.toFixed(1) : "?";
+  const wtag   = p.wouldTakeAgainPercent >= 0 ? Math.round(p.wouldTakeAgainPercent) + "%" : "N/A";
+  const bg     = rGrad(p.avgRating);
+  const dc     = !p.avgDifficulty ? "#9ca3af" : p.avgDifficulty <= 2 ? "#16a34a" : p.avgDifficulty <= 3.5 ? "#d97706" : "#dc2626";
+  const name   = `${p.firstName} ${p.lastName}`;
+  const retakePct = p.wouldTakeAgainPercent >= 0 ? p.wouldTakeAgainPercent : 0;
+  const inComp = compareList.some(c=>c.id===p.id);
+  return `<div class="prof-card fade-in" style="display:flex;">
+    <div class="prof-card-body" style="flex:1;min-width:0;cursor:pointer;" onclick="loadProfessor('${p.id}','${esc(name)}')">
+      <div class="rating-pill" style="background:${bg};">
+        <div class="rp-num">${rating}</div>
+        <div class="rp-max">/ 5</div>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <p style="font-weight:800;font-size:15px;letter-spacing:-.2px;line-height:1.2;">${esc(name)}</p>
+        <p style="font-size:11px;color:#b8b0a6;margin-top:2px;margin-bottom:6px;">${esc(p.department||"—")}</p>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;max-width:240px;">
+          <div style="text-align:center;">
+            <div style="font-size:12px;font-weight:800;color:${p.avgRating>=4?"#16a34a":p.avgRating>=3?"#d97706":"#dc2626"};">${rating}</div>
+            <div style="font-size:9px;color:#b8b0a6;margin-top:1px;">RATING</div>
+            <div class="mini-bar"><div class="mini-bar-fill" style="width:${((p.avgRating||0)/5)*100}%;background:${bg};"></div></div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:12px;font-weight:800;color:${dc};">${diff}</div>
+            <div style="font-size:9px;color:#b8b0a6;margin-top:1px;">DIFF</div>
+            <div class="mini-bar"><div class="mini-bar-fill" style="width:${((p.avgDifficulty||0)/5)*100}%;background:${dc};"></div></div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:12px;font-weight:800;color:#374151;">${p.wouldTakeAgainPercent>=0?Math.round(p.wouldTakeAgainPercent)+"%":"—"}</div>
+            <div style="font-size:9px;color:#b8b0a6;margin-top:1px;">RETAKE</div>
+            <div class="mini-bar"><div class="mini-bar-fill" style="width:${retakePct}%;background:#6366f1;"></div></div>
+          </div>
+        </div>
+        <p style="font-size:10px;color:#d1d5db;margin-top:5px;">${p.numRatings||0} review${p.numRatings!==1?"s":""}</p>
+      </div>
+      <svg width="13" height="13" fill="none" stroke="#d1d5db" stroke-width="2.5" viewBox="0 0 24 24" style="flex-shrink:0;"><path d="M9 18l6-6-6-6"/></svg>
+    </div>
+    <div style="display:flex;flex-direction:column;justify-content:center;gap:6px;padding:0 12px 0 4px;">
+      ${bmHtml(p.id, name, p.department, p.avgRating)}
+      <button class="compare-btn ${inComp?"selected":""}" onclick="event.stopPropagation();toggleCompare({id:'${p.id}',name:'${esc(name)}',rating:${p.avgRating},diff:${p.avgDifficulty},retake:${p.wouldTakeAgainPercent},reviews:${p.numRatings||0},dept:'${esc(p.department||"")}'})" title="Compare">⇄</button>
+    </div>
+  </div>`;
 }
 
 // ── Professor detail ──────────────────────────────────────────────────────
 async function loadProfessor(id, name) {
-  showLoader("profDetail",`Loading ${name}…`);
+  showSkeleton("profDetail");
   document.getElementById("profDetail").classList.remove("hidden");
   document.getElementById("profDetail").scrollIntoView({behavior:"smooth",block:"start"});
   try {
-    const res=await fetch(`/api/professor/${encodeURIComponent(id)}`);
+    const sid = SCHOOL.id || "";
+    const res=await fetch(`/api/professor/${encodeURIComponent(id)}?school_id=${encodeURIComponent(sid)}`);
     const data=await res.json();
     if(data.error){document.getElementById("profDetail").innerHTML=`<div class="card" style="padding:20px;color:#f87171;">${data.error}</div>`;return;}
     renderProfDetail(data);
+    addToRecent({id, name, rating: data.professor?.avgRating, dept: data.professor?.department});
   } catch(e){document.getElementById("profDetail").innerHTML=`<div class="card" style="padding:20px;color:#f87171;">Failed to load.</div>`;}
 }
 
@@ -792,7 +1074,8 @@ function renderProfDetail(data) {
       :`<div class="card" style="padding:20px;margin-top:10px;"><p style="font-weight:800;font-size:14px;display:flex;align-items:center;gap:7px;">${rl} Reddit Mentions</p><p style="font-size:13px;color:#b8b0a6;margin-top:6px;">No Reddit posts found.</p></div>`)
     :`<div class="card" style="padding:20px;margin-top:10px;"><div class="lock-row"><div class="lock-ico">${rl}</div><div><p class="lock-title">Reddit Mentions</p><p class="lock-sub">What students are saying on Reddit.</p></div><a href="/pay" class="unlock-btn">Unlock $1.99</a></div></div>`;
 
-  document.getElementById("profDetail").innerHTML=`<div style="display:flex;flex-direction:column;gap:10px;" class="fade-in"><div class="card" style="padding:22px;"><div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;"><div style="width:70px;height:70px;border-radius:18px;background:${bg};display:flex;align-items:center;justify-content:center;font-weight:900;font-size:21px;color:#fff;flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,.12);">${p.avgRating!=null?p.avgRating.toFixed(1):"?"}</div><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;"><h2 style="font-size:20px;font-weight:900;letter-spacing:-.5px;">${esc(p.name)}</h2><a href="${esc(p.rmpUrl)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;background:color-mix(in srgb, var(--p1) 8%, white);color:var(--p1);border:1px solid color-mix(in srgb, var(--p1) 25%, white);border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700;text-decoration:none;">RMP ↗</a>${bmHtml(p.id, p.name, p.department, p.avgRating)}</div><p style="font-size:12px;color:#b8b0a6;">${esc(p.department||"")}</p><div class="stat-grid"><div class="stat-chip"><div class="v" style="color:${p.avgRating>=4?"#16a34a":p.avgRating>=3?"#d97706":"#dc2626"};">${p.avgRating!=null?p.avgRating.toFixed(1):"—"}</div><div class="l">Rating</div></div><div class="stat-chip"><div class="v" style="color:${dc};">${p.avgDifficulty!=null?p.avgDifficulty.toFixed(1):"—"}</div><div class="l">Difficulty</div></div><div class="stat-chip"><div class="v">${wtag!=null?wtag+"%":"—"}</div><div class="l">Retake</div></div><div class="stat-chip"><div class="v">${p.numRatings??0}</div><div class="l">Reviews</div></div></div></div></div>${easyAHtml}${gradeDist}${courses}</div>${examHtml}<div class="card" style="padding:20px;"><p style="font-weight:800;font-size:14px;margin-bottom:12px;">💬 Student Reviews <span class="tag" style="background:#F5F5F4;color:#6b7280;margin-left:5px;">${isPremium?ratings.length+" total":"3 of "+ratings.length+" free"}</span></p>${reviewsHtml}${moreReviews}</div>${redditHtml}</div>`;
+  const shareUrl = `${location.origin}/?prof=${encodeURIComponent(p.id)}&school=${encodeURIComponent(SCHOOL.id||"")}`;
+  document.getElementById("profDetail").innerHTML=`<div style="display:flex;flex-direction:column;gap:10px;" class="fade-in"><div class="card" style="padding:22px;"><div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;"><div style="width:70px;height:70px;border-radius:18px;background:${bg};display:flex;align-items:center;justify-content:center;font-weight:900;font-size:21px;color:#fff;flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,.12);">${p.avgRating!=null?p.avgRating.toFixed(1):"?"}</div><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;"><h2 style="font-size:20px;font-weight:900;letter-spacing:-.5px;">${esc(p.name)}</h2><a href="${esc(p.rmpUrl)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;background:color-mix(in srgb, var(--p1) 8%, white);color:var(--p1);border:1px solid color-mix(in srgb, var(--p1) 25%, white);border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700;text-decoration:none;">RMP ↗</a><button class="share-btn" id="shareBtn" onclick="shareProf('${esc(shareUrl)}','${esc(p.name)}')">⎘ Share</button>${bmHtml(p.id, p.name, p.department, p.avgRating)}</div><p style="font-size:12px;color:#b8b0a6;">${esc(p.department||"")}</p><div class="stat-grid"><div class="stat-chip"><div class="v" style="color:${p.avgRating>=4?"#16a34a":p.avgRating>=3?"#d97706":"#dc2626"};">${p.avgRating!=null?p.avgRating.toFixed(1):"—"}</div><div class="l">Rating</div></div><div class="stat-chip"><div class="v" style="color:${dc};">${p.avgDifficulty!=null?p.avgDifficulty.toFixed(1):"—"}</div><div class="l">Difficulty</div></div><div class="stat-chip"><div class="v">${wtag!=null?wtag+"%":"—"}</div><div class="l">Retake</div></div><div class="stat-chip"><div class="v">${p.numRatings??0}</div><div class="l">Reviews</div></div></div></div></div>${easyAHtml}${gradeDist}${courses}</div>${examHtml}<div class="card" style="padding:20px;"><p style="font-weight:800;font-size:14px;margin-bottom:12px;">💬 Student Reviews <span class="tag" style="background:#F5F5F4;color:#6b7280;margin-left:5px;">${isPremium?ratings.length+" total":"3 of "+ratings.length+" free"}</span></p>${reviewsHtml}${moreReviews}</div>${redditHtml}</div>`;
 }
 
 // ── Detail lock (free course users) ──────────────────────────────────────
@@ -1002,6 +1285,190 @@ async function renderSaved() {
     }).join("")}</div>`;
   } catch(_) { el.innerHTML = `<div class="saved-empty"><div class="empty-icon">⚠️</div><p style="font-size:13px;">Couldn't load bookmarks.</p></div>`; }
 }
+
+// ── Skeleton loader ───────────────────────────────────────────────────────
+function showSkeleton(id, count=1) {
+  const el = document.getElementById(id);
+  el.innerHTML = `<div class="skeleton-wrap">${[...Array(count)].map(()=>`
+    <div class="sk-card">
+      <div style="display:flex;gap:14px;align-items:flex-start;">
+        <div class="sk-line sk-circle" style="width:56px;height:56px;flex-shrink:0;border-radius:14px;"></div>
+        <div style="flex:1;">
+          <div class="sk-line" style="height:16px;width:55%;margin-bottom:10px;"></div>
+          <div class="sk-line" style="height:11px;width:30%;margin-bottom:14px;"></div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;max-width:220px;">
+            ${[...Array(3)].map(()=>`<div class="sk-line" style="height:32px;border-radius:8px;"></div>`).join("")}
+          </div>
+        </div>
+      </div>
+    </div>`).join("")}
+  </div>`;
+  el.classList.remove("hidden");
+}
+
+// ── Compare ───────────────────────────────────────────────────────────────
+let compareList = [];
+
+function toggleCompare(prof) {
+  const idx = compareList.findIndex(c=>c.id===prof.id);
+  if (idx > -1) {
+    compareList.splice(idx, 1);
+  } else {
+    if (compareList.length >= 2) { showToast("Already comparing 2 professors — clear one first."); return; }
+    compareList.push(prof);
+  }
+  updateCompareBar();
+  // Refresh compare buttons
+  document.querySelectorAll(".compare-btn").forEach(btn => {
+    const card = btn.closest(".prof-card");
+    if (!card) return;
+    const inList = compareList.some(c => btn.getAttribute("onclick")?.includes(`'${c.id}'`));
+    btn.classList.toggle("selected", inList);
+  });
+}
+
+function updateCompareBar() {
+  const bar = document.getElementById("compareBar");
+  const goBtn = document.getElementById("compareGoBtn");
+  if (!compareList.length) { bar.classList.remove("show"); return; }
+  bar.classList.add("show");
+  [0, 1].forEach(i => {
+    const slot = document.getElementById(`cSlot${i}`);
+    if (compareList[i]) { slot.textContent = compareList[i].name; slot.classList.remove("empty"); }
+    else { slot.textContent = "Select a professor…"; slot.classList.add("empty"); }
+  });
+  goBtn.disabled = compareList.length < 2;
+}
+
+function clearCompare() {
+  compareList = [];
+  updateCompareBar();
+  document.querySelectorAll(".compare-btn").forEach(b=>b.classList.remove("selected"));
+}
+
+function openCompareModal() {
+  if (compareList.length < 2) return;
+  const [a, b] = compareList;
+  const rows = [
+    ["Rating", a.rating?.toFixed(1)||"?", b.rating?.toFixed(1)||"?", "higher"],
+    ["Difficulty", a.diff?.toFixed(1)||"?", b.diff?.toFixed(1)||"?", "lower"],
+    ["Would Retake", a.retake>=0?Math.round(a.retake)+"%":"?", b.retake>=0?Math.round(b.retake)+"%":"?", "higher"],
+    ["# Reviews", a.reviews, b.reviews, "higher"],
+    ["Department", a.dept||"—", b.dept||"—", "none"],
+  ];
+  const col = (p, isWinner) => `
+    <div class="compare-col">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+        <div style="width:44px;height:44px;border-radius:12px;background:${rGrad(p.rating)};display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff;">${p.rating?.toFixed(1)||"?"}</div>
+        <div><p style="font-weight:800;font-size:15px;letter-spacing:-.2px;">${esc(p.name)}</p><p style="font-size:11px;color:#b8b0a6;">${esc(p.dept||"")}</p></div>
+      </div>
+      ${rows.map(([label, av, bv]) => {
+        const val = p===a?av:bv; const other = p===a?bv:av;
+        let cls = "";
+        if (label==="Rating"||label==="Would Retake"||label==="# Reviews") cls = parseFloat(val)>parseFloat(other)?"winner":parseFloat(val)<parseFloat(other)?"loser":"";
+        if (label==="Difficulty") cls = parseFloat(val)<parseFloat(other)?"winner":parseFloat(val)>parseFloat(other)?"loser":"";
+        return `<div class="compare-row"><span class="cr-label">${label}</span><span class="cr-val ${cls}">${val}</span></div>`;
+      }).join("")}
+    </div>`;
+  document.getElementById("compareContent").innerHTML = col(a) + col(b);
+  document.getElementById("compareModal").classList.remove("hidden");
+}
+
+function closeCompareModal() { document.getElementById("compareModal").classList.add("hidden"); }
+
+// ── Recently Viewed ───────────────────────────────────────────────────────
+let recentProfs = JSON.parse(localStorage.getItem("pf_recent") || "[]");
+
+function addToRecent(prof) {
+  recentProfs = recentProfs.filter(r=>r.id!==prof.id);
+  recentProfs.unshift(prof);
+  recentProfs = recentProfs.slice(0, 6);
+  localStorage.setItem("pf_recent", JSON.stringify(recentProfs));
+  renderRecent();
+}
+
+function renderRecent() {
+  const el = document.getElementById("recentSection");
+  if (!recentProfs.length || activeTab !== "professor") { el.innerHTML=""; return; }
+  const bg = (r) => r>=4?"#22c55e":r>=3?"#f59e0b":r>=2?"#fb923c":"#f87171";
+  el.innerHTML = `
+    <div class="section-head" style="margin-bottom:8px;">
+      <h3 style="font-size:12px;color:#b8b0a6;letter-spacing:.04em;text-transform:uppercase;">Recently Viewed</h3>
+    </div>
+    <div class="recent-scroll">
+      ${recentProfs.map(p=>`
+        <div class="recent-chip" onclick="loadProfessor('${esc(p.id)}','${esc(p.name)}')">
+          ${p.rating!=null?`<span class="recent-rating" style="background:${bg(p.rating)};">${Number(p.rating).toFixed(1)}</span>`:""}
+          ${esc(p.name)}
+        </div>`).join("")}
+    </div>`;
+}
+
+// ── Trending ──────────────────────────────────────────────────────────────
+async function loadTrending() {
+  const el = document.getElementById("trendingSection");
+  if (activeTab !== "professor") { el.innerHTML=""; return; }
+  const sid = SCHOOL.id || "";
+  try {
+    const res  = await fetch(`/api/trending?school_id=${encodeURIComponent(sid)}`);
+    const data = await res.json();
+    const list = data.trending || [];
+    if (!list.length) { el.innerHTML=""; return; }
+    const medals = ["🥇","🥈","🥉"];
+    el.innerHTML = `
+      <div class="section-head">
+        <h3>🔥 Trending at ${esc(SCHOOL.abbr||SCHOOL.name)}</h3>
+        <span style="font-size:11px;color:#b8b0a6;">Last 14 days</span>
+      </div>
+      <div class="trending-list">
+        ${list.map((p,i)=>`
+          <div class="trending-item" onclick="loadProfessor('${esc(p.prof_id)}','${esc(p.name)}')">
+            <span class="trending-rank">${i<3?medals[i]:`<span style="font-weight:800;color:#d1d5db;">#${i+1}</span>`}</span>
+            <div style="width:38px;height:38px;border-radius:10px;background:${rGrad(p.rating)};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:#fff;flex-shrink:0;">${p.rating!=null?Number(p.rating).toFixed(1):"?"}</div>
+            <div style="flex:1;min-width:0;">
+              <p style="font-weight:700;font-size:14px;">${esc(p.name)}</p>
+              <p style="font-size:11px;color:#b8b0a6;">${esc(p.dept||"")}</p>
+            </div>
+            <span class="trending-fire">🔥 ${p.views}</span>
+          </div>`).join("")}
+      </div>`;
+  } catch(_) { el.innerHTML = ""; }
+}
+
+// ── Share ─────────────────────────────────────────────────────────────────
+function shareProf(url, name) {
+  if (navigator.share) {
+    navigator.share({ title: `${name} — Professor Finder`, url }).catch(()=>{});
+  } else {
+    navigator.clipboard.writeText(url).then(()=>{
+      const btn = document.getElementById("shareBtn");
+      if (btn) { btn.textContent = "✓ Copied!"; btn.classList.add("copied"); setTimeout(()=>{btn.textContent="⎘ Share";btn.classList.remove("copied");},2000); }
+      showToast("Link copied to clipboard!");
+    }).catch(()=> showToast("Copy: " + url));
+  }
+}
+
+// ── Toast ─────────────────────────────────────────────────────────────────
+let _toastTimer;
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(()=>t.classList.remove("show"), 2800);
+}
+
+// ── Deep-link: ?prof=ID auto-load ────────────────────────────────────────
+(function checkDeepLink() {
+  const params = new URLSearchParams(location.search);
+  const profId = params.get("prof");
+  if (profId) {
+    const sId = params.get("school");
+    if (sId && !SCHOOL.id) SCHOOL.id = sId;
+    loadProfessor(profId, "Professor");
+    history.replaceState({}, "", "/");
+  }
+})();
 
 // ── Helpers ───────────────────────────────────────────────────────────────
 function rGrad(r) {
