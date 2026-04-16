@@ -468,11 +468,16 @@ def reset_password(token):
 
 @app.errorhandler(404)
 def not_found(e):
+    # Return JSON for /api/ routes, HTML otherwise
+    if request.path.startswith("/api/"):
+        return jsonify({"error": "Not found"}), 404
     return render_template("404.html"), 404
 
 
 @app.errorhandler(500)
 def server_error(e):
+    if request.path.startswith("/api/"):
+        return jsonify({"error": "Server error — please try again"}), 500
     return render_template("404.html", code=500, message="Something went wrong on our end."), 500
 
 
