@@ -758,7 +758,10 @@ async function fetchWithRetry(url, opts={}) {
   if (!SCHOOL.id) resolveSchoolId(SCHOOL);
   renderRecent();
   loadTrending();
+  // Wake the server immediately on page load so searches feel instant
   fetch('/ping').catch(() => {});
+  // Keep pinging every 10 min so the server never sleeps mid-session
+  setInterval(() => fetch('/ping').catch(() => {}), 10 * 60 * 1000);
 })();
 
 function renderHeader() {
@@ -948,24 +951,22 @@ async function doCourseSearch() {
   const course = document.getElementById("courseInput").value.trim();
   if (!course) return;
   clearDetail();
-  // Make sure school ID is resolved before searching
   if (!SCHOOL.id) {
     showLoader("searchResults", "Resolving school data…");
     await resolveSchoolId(SCHOOL);
     if (!SCHOOL.id) { showError(`Could not find ${esc(SCHOOL.name)} on Rate My Professors.`); return; }
   }
   const sid = SCHOOL.id;
-  let cached = false;
-  try { cached=(await(await fetch(`/api/index-status?school_id=${encodeURIComponent(sid)}`)).json()).cached; } catch(_){}
-  showLoader("searchResults", cached ? `Searching for "${esc(course)}"…` : `Building professor index for ${esc(SCHOOL.name)} — hold tight (~15 sec)…`);
+  // Show loader IMMEDIATELY — never block on index-status before showing feedback
+  showLoader("searchResults", `Searching for "${esc(course)}"…`);
   let courseData;
   try {
     const res = await fetchWithRetry(`/api/course?course=${encodeURIComponent(course)}&school_id=${encodeURIComponent(sid)}`);
     const text = await res.text();
     try { courseData = JSON.parse(text); } catch(_) {
-      showError("Server returned an unexpected response. Please try again in a moment."); return;
+      showError("Server returned an unexpected response. Please try again."); return;
     }
-  } catch(e) { showError("Server is still waking up — please wait a few seconds and try again."); return; }
+  } catch(e) { showError("Search failed — please try again."); return; }
   if(courseData.error){showError(courseData.error);return;}
   renderCourseResults(courseData.results, courseData.course);
 }
