@@ -687,31 +687,13 @@ let activeTab = "professor";
 let currentUser = (INIT_USER && INIT_USER.uid) ? INIT_USER : null;
 let bookmarkSet = new Set(); // ref_ids the user has bookmarked
 
-// ── Simple fetch with retry (cold-start safe) ────────────────────────────
-async function fetchWithRetry(url, opts={}) {
-  const MAX = 8;
-  for (let i = 0; i < MAX; i++) {
-    const ctrl = new AbortController();
-    const t = setTimeout(() => ctrl.abort(), 28000);
-    try {
-      const res = await fetch(url, { ...opts, signal: ctrl.signal });
-      clearTimeout(t);
-      if (res.status !== 502 && res.status !== 503) return res;
-    } catch(e) {
-      clearTimeout(t);
-    }
-    if (i === 0) _showWakeCard();
-    await new Promise(r => setTimeout(r, 7000));
-  }
-  throw new Error('Server unavailable');
-}
-
+// ── Fetch with cold-start handling ───────────────────────────────────────────
 let _wakeInterval = null;
+
 function _showWakeCard() {
   const el = document.getElementById('searchResults');
-  if (!el) return;
+  if (!el || _wakeInterval) return; // already showing
   let secs = 0;
-  if (_wakeInterval) clearInterval(_wakeInterval);
   _wakeInterval = setInterval(() => {
     secs++;
     const bar = document.getElementById('_wakeBar');
@@ -731,6 +713,40 @@ function _showWakeCard() {
     </div>
   </div>`;
   el.classList.remove('hidden');
+}
+
+async function fetchWithRetry(url, opts={}) {
+  // Show wake card after 4s if the request is still pending
+  let wakeTimer = setTimeout(_showWakeCard, 4000);
+
+  for (let i = 0; i < 4; i++) {
+    const ctrl = new AbortController();
+    // First attempt: 90s timeout — Render holds the connection open during
+    // cold start; we must wait it out rather than abort and retry endlessly.
+    // Subsequent attempts: 35s (server is already awake by then).
+    const ms = (i === 0) ? 90000 : 35000;
+    const t = setTimeout(() => ctrl.abort(), ms);
+    try {
+      const res = await fetch(url, { ...opts, signal: ctrl.signal });
+      clearTimeout(t);
+      if (res.status !== 502 && res.status !== 503) {
+        // Success — clean up wake card
+        clearTimeout(wakeTimer);
+        if (_wakeInterval) { clearInterval(_wakeInterval); _wakeInterval = null; }
+        return res;
+      }
+      // 502/503: Render is still starting — fall through to retry
+      clearTimeout(t);
+    } catch(e) {
+      clearTimeout(t);
+    }
+    // Ensure wake card is visible, then wait before retrying
+    clearTimeout(wakeTimer); wakeTimer = null;
+    _showWakeCard();
+    if (i < 3) await new Promise(r => setTimeout(r, 8000));
+  }
+  if (_wakeInterval) { clearInterval(_wakeInterval); _wakeInterval = null; }
+  throw new Error('Server unavailable');
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────
