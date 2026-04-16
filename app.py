@@ -201,10 +201,10 @@ def pay_page():
 def create_checkout():
     base_url = request.host_url.rstrip("/")
     try:
-        session = payment.create_checkout_session(base_url)
-        return redirect(session.url)
+        checkout = payment.create_checkout_session(base_url)  # don't shadow Flask's session
+        return redirect(checkout.url)
     except Exception as e:
-        return redirect(f"/pay?error={str(e)}")
+        return redirect(f"/pay?error=Checkout+unavailable")
 
 
 @app.route("/payment-success")
@@ -382,7 +382,10 @@ def professor_detail(professor_id):
 
         easy_a        = rmp.compute_easy_a(data)
         exam_mentions = rmp.parse_exam_info(ratings_list)
-        reddit_posts  = reddit_scraper.search_reddit_multi(full_name)
+        try:
+            reddit_posts = reddit_scraper.search_reddit_multi(full_name)
+        except Exception:
+            reddit_posts = []
 
         return jsonify({
             "professor": prof_base, "ratings": ratings_list,

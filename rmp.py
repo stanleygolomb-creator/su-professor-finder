@@ -143,7 +143,8 @@ query NewSearchTeachersQuery($query: TeacherSearchQuery!) {
 
 # Simple in-memory search cache: {cache_key: (results, timestamp)}
 _search_cache: dict = {}
-_SEARCH_CACHE_TTL = 300  # 5 minutes
+_SEARCH_CACHE_TTL  = 300   # 5 minutes
+_SEARCH_CACHE_MAX  = 500   # max entries before evicting oldest
 
 def search_professors(name: str, school_id: str = None) -> list:
     if not school_id:
@@ -160,6 +161,11 @@ def search_professors(name: str, school_id: str = None) -> list:
     )
     resp.raise_for_status()
     results = [e["node"] for e in resp.json()["data"]["newSearch"]["teachers"]["edges"]]
+    # Evict oldest entries if cache is too large
+    if len(_search_cache) >= _SEARCH_CACHE_MAX:
+        oldest = sorted(_search_cache, key=lambda k: _search_cache[k][1])
+        for k in oldest[:50]:
+            del _search_cache[k]
     _search_cache[cache_key] = (results, time.time())
     return results
 
@@ -214,7 +220,8 @@ def _fetch_professor_page(text: str, school_id: str) -> list:
 def _do_build_index(school_id: str) -> dict:
     """Actually hits RMP and builds a fresh professor index."""
     single  = list(string.ascii_lowercase)
-    two_ltr = [a + b for a in "sbcmhwtgjp" for b in string.ascii_lowercase]
+    # All 26 letters × 26 = 676 two-letter prefixes — covers every last name
+    two_ltr = [a + b for a in string.ascii_lowercase for b in string.ascii_lowercase]
     queries = single + two_ltr
 
     profs: dict = {}
@@ -326,8 +333,8 @@ def search_by_course(course: str, school_id: str = None) -> list:
             if (q_norm and q_norm in n) or (q_lower and q_lower in nl):
                 matched.append(p)
                 break
-    for p in matched:
-        p["rankScore"] = _rank_score(p)
+    # Copy before mutating — never modify cached dicts in-place
+    matched = [{**p, "rankScore": _rank_score(p)} for p in matched]
     matched.sort(key=lambda p: p["rankScore"], reverse=True)
     return matched
 
@@ -429,7 +436,6 @@ def search_by_department(department: str, school_id: str = None) -> list:
     profs = build_professor_index(school_id)
     q = department.lower().strip()
     matched = [p for p in profs.values() if q in (p.get("department") or "").lower()]
-    for p in matched:
-        p["rankScore"] = _rank_score(p)
+    matched = [{**p, "rankScore": _rank_score(p)} for p in matched]
     matched.sort(key=lambda p: p["rankScore"], reverse=True)
     return matched

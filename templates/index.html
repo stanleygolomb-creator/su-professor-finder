@@ -1341,9 +1341,12 @@ async function doSignup() {
 }
 
 async function doLogout() {
-  await fetch("/logout", {method:"POST"});
+  await fetch("/logout", {method:"POST"}).catch(() => {});
   currentUser = null;
+  IS_PREMIUM = false;
   bookmarkSet.clear();
+  recentProfs = [];
+  localStorage.removeItem("pf_recent");
   renderHeader();
   renderProfPanel();
   if (activeTab === "saved") setTab("professor");
@@ -1389,19 +1392,28 @@ function bmHtml(profId, profName, dept, rating) {
 async function toggleBookmark(profId, profName, dept, rating) {
   if (!currentUser) { openAuth("login"); return; }
   const wasSaved = bookmarkSet.has(profId);
-  if (wasSaved) {
-    bookmarkSet.delete(profId);
-    await fetch(`/api/bookmarks/${encodeURIComponent(profId)}`, {method:"DELETE"});
-  } else {
-    bookmarkSet.add(profId);
-    await fetch("/api/bookmarks", {method:"POST",headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({ref_id:profId, name:profName, dept, rating})});
+  // Optimistic update
+  wasSaved ? bookmarkSet.delete(profId) : bookmarkSet.add(profId);
+  _refreshBmButtons(profId);
+  try {
+    if (wasSaved) {
+      await fetch(`/api/bookmarks/${encodeURIComponent(profId)}`, {method:"DELETE"});
+    } else {
+      await fetch("/api/bookmarks", {method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ref_id:profId, name:profName, dept, rating})});
+    }
+  } catch(_) {
+    // Rollback on network error
+    wasSaved ? bookmarkSet.add(profId) : bookmarkSet.delete(profId);
+    _refreshBmButtons(profId);
   }
-  // Update all bookmark buttons for this prof
+}
+function _refreshBmButtons(profId) {
+  const saved = bookmarkSet.has(profId);
   document.querySelectorAll(`.bm-btn[data-id="${CSS.escape(profId)}"]`).forEach(btn => {
-    btn.classList.toggle("saved", bookmarkSet.has(profId));
-    btn.title = bookmarkSet.has(profId) ? "Remove bookmark" : "Save professor";
-    btn.querySelector("svg").setAttribute("fill", bookmarkSet.has(profId) ? "currentColor" : "none");
+    btn.classList.toggle("saved", saved);
+    btn.title = saved ? "Remove bookmark" : "Save professor";
+    btn.querySelector("svg")?.setAttribute("fill", saved ? "currentColor" : "none");
   });
 }
 
@@ -1539,10 +1551,11 @@ function closeCompareModal() { document.getElementById("compareModal").classList
 let recentProfs = JSON.parse(localStorage.getItem("pf_recent") || "[]");
 
 function addToRecent(prof) {
+  if (!prof || !prof.id) return;
   recentProfs = recentProfs.filter(r=>r.id!==prof.id);
   recentProfs.unshift(prof);
   recentProfs = recentProfs.slice(0, 6);
-  localStorage.setItem("pf_recent", JSON.stringify(recentProfs));
+  try { localStorage.setItem("pf_recent", JSON.stringify(recentProfs)); } catch(_) {}
   renderRecent();
 }
 
@@ -1740,7 +1753,7 @@ function showInstallPrompt() {
 function triggerInstall() {
   if (!_deferredInstall) return;
   _deferredInstall.prompt();
-  _deferredInstall.userChoice.then(() => { _deferredInstall = null; document.getElementById("toast").classList.remove("show"); });
+  _deferredInstall.userChoice?.then(() => { _deferredInstall = null; document.getElementById("toast")?.classList.remove("show"); }).catch(() => {});
 }
 
 function dismissInstall() {
