@@ -68,6 +68,13 @@ def _is_premium(request):
     return payment.is_premium(request)
 
 
+# ── Health / keep-alive ───────────────────────────────────────────────────────
+
+@app.route("/ping")
+def ping():
+    return jsonify({"ok": True}), 200
+
+
 # ── Owner bypass ──────────────────────────────────────────────────────────────
 
 BYPASS_KEY = os.environ.get("BYPASS_KEY", "")
