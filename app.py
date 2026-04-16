@@ -51,17 +51,17 @@ def _warmup():
         pass
 
 def _self_ping():
-    """Ping ourselves every 14 min to prevent Render free-tier sleep."""
+    """Ping ourselves every 13 min to prevent Render free-tier sleep."""
     import urllib.request
-    time.sleep(60)  # wait for server to be ready first
+    time.sleep(90)  # wait for server to be fully ready
+    _FALLBACK = "https://su-professor-finder.onrender.com"
     while True:
+        host = (os.environ.get("RENDER_EXTERNAL_URL") or _FALLBACK).rstrip("/")
         try:
-            host = os.environ.get("RENDER_EXTERNAL_URL", "")
-            if host:
-                urllib.request.urlopen(f"{host}/ping", timeout=10)
+            urllib.request.urlopen(f"{host}/ping", timeout=10)
         except Exception:
             pass
-        time.sleep(840)  # 14 minutes
+        time.sleep(780)  # 13 minutes
 
 threading.Thread(target=_warmup, daemon=True).start()
 threading.Thread(target=_self_ping, daemon=True).start()

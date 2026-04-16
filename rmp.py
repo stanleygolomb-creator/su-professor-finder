@@ -141,9 +141,17 @@ query NewSearchTeachersQuery($query: TeacherSearchQuery!) {
 """ % TEACHER_FIELDS
 
 
+# Simple in-memory search cache: {cache_key: (results, timestamp)}
+_search_cache: dict = {}
+_SEARCH_CACHE_TTL = 300  # 5 minutes
+
 def search_professors(name: str, school_id: str = None) -> list:
     if not school_id:
         school_id = get_su_school_id()
+    cache_key = f"{name.lower().strip()}|{school_id}"
+    cached = _search_cache.get(cache_key)
+    if cached and (time.time() - cached[1]) < _SEARCH_CACHE_TTL:
+        return cached[0]
     variables = {"query": {"text": name, "schoolID": school_id}}
     resp = requests.post(
         GRAPHQL_URL,
@@ -151,7 +159,9 @@ def search_professors(name: str, school_id: str = None) -> list:
         headers=HEADERS, timeout=10,
     )
     resp.raise_for_status()
-    return [e["node"] for e in resp.json()["data"]["newSearch"]["teachers"]["edges"]]
+    results = [e["node"] for e in resp.json()["data"]["newSearch"]["teachers"]["edges"]]
+    _search_cache[cache_key] = (results, time.time())
+    return results
 
 
 def get_professor_ratings(professor_id: str):
