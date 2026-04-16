@@ -699,60 +699,90 @@ let bookmarkSet = new Set(); // ref_ids the user has bookmarked
   // Load trending + recent on startup
   renderRecent();
   loadTrending();
-  // Silent wake ping — keeps Render server warm on page load
-  fetch("/ping").catch(()=>{});
+  // Start warming the server immediately on page load — don't wait
+  _startWarmup();
 })();
 
-// ── Fetch with retry (Render cold-start resilience) ───────────────────────
-// Render free tier cold-starts take 30-75 seconds.  Strategy:
-//   • First request has a 90 s window — if Render holds the connection, it succeeds
-//   • If we get a 502/503 or a hard network error, sleep 15 s then retry
-//   • 4 total attempts = up to ~75 s of retry time after the first abort
-const _FETCH_TIMEOUT = 90000; // 90 s — covers Render's worst-case cold start
-async function fetchWithRetry(url, opts={}, retries=3) {
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    const ctrl  = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), _FETCH_TIMEOUT);
-    // Show the wake-up card after 6 s of silence on ANY attempt
-    const wakeTimer = setTimeout(() => _showWakeMsg(attempt), 6000);
-    let res;
-    try {
-      res = await fetch(url, { ...opts, signal: ctrl.signal });
-      clearTimeout(timer); clearTimeout(wakeTimer);
-    } catch(e) {
-      clearTimeout(timer); clearTimeout(wakeTimer);
-      if (attempt < retries) { _showWakeMsg(attempt); await _sleep(15000); continue; }
-      throw e;
-    }
-    // Retry on Render's 502/503 wake-up pages
-    if ((res.status === 502 || res.status === 503) && attempt < retries) {
-      clearTimeout(wakeTimer);
-      _showWakeMsg(attempt);
-      await _sleep(15000);
-      continue;
-    }
-    clearTimeout(wakeTimer);
-    return res;
-  }
-}
+// ── Server warmup + fetch helper ──────────────────────────────────────────
+// Strategy: ping /ping repeatedly until the server responds, THEN search.
+// This way searches never race against a cold start — we wait first.
 const _sleep = ms => new Promise(r => setTimeout(r, ms));
-function _showWakeMsg(attempt=0) {
-  const el = document.getElementById("searchResults");
-  if (!el) return;
-  const msgs = [
-    "Server was idle — waking it up now. Usually takes 20–40 seconds…",
-    "Still warming up. Hang tight…",
-    "Almost ready, one last try…",
-  ];
-  el.innerHTML = `<div class="card" style="padding:28px;text-align:center;">
-    <div style="font-size:32px;margin-bottom:12px;display:inline-block;" class="spinner">⚙️</div>
-    <p style="font-weight:800;font-size:15px;color:#374151;margin-bottom:8px;">Server is waking up…</p>
-    <p style="font-size:12px;color:#9ca3af;line-height:1.8;max-width:300px;margin:0 auto;">${msgs[Math.min(attempt, msgs.length-1)]}</p>
-    <div style="margin-top:14px;height:4px;background:#F0EBE5;border-radius:2px;max-width:200px;margin-left:auto;margin-right:auto;overflow:hidden;">
-      <div style="height:100%;background:var(--p1);border-radius:2px;animation:prog ${attempt===0?'30s':'20s'} linear forwards;"></div>
-    </div>
-  </div>`;
-  el.classList.remove("hidden");
+let _serverReady = false;
+let _warmupPromise = null;
+
+function _startWarmup() {
+  if (_warmupPromise) return _warmupPromise;
+  _warmupPromise = (async () => {
+    for (let i = 0; i < 20; i++) {          // up to ~3 min of pinging
+      try {
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 15000);
+        const res = await fetch('/ping', { signal: ctrl.signal });
+        clearTimeout(t);
+        if (res.ok) { _serverReady = true; return true; }
+      } catch(e) {}
+      await _sleep(8000);                    // 8 s between pings
+    }
+    return false;
+  })();
+  return _warmupPromise;
+}
+
+// Wait for server ready, showing UI feedback if it takes > 2 s
+async function _ensureServerReady(resultsElId) {
+  if (_serverReady) return true;
+  _startWarmup();
+  let elapsed = 0;
+  const interval = setInterval(() => {
+    elapsed += 1;
+    const el = document.getElementById(resultsElId || "searchResults");
+    if (!el) return;
+    el.innerHTML = `<div class="card" style="padding:28px;text-align:center;">
+      <div style="font-size:32px;margin-bottom:12px;display:inline-block;" class="spinner">⚙️</div>
+      <p style="font-weight:800;font-size:15px;color:#374151;margin-bottom:8px;">Server is waking up…</p>
+      <p style="font-size:12px;color:#9ca3af;line-height:1.6;max-width:300px;margin:0 auto;">
+        Our free server was idle. This takes <strong>20–50 seconds</strong> on first load.<br>
+        <span style="color:var(--p1);font-weight:700;">${elapsed}s</span> — searching automatically when ready…
+      </p>
+      <div style="margin-top:14px;height:4px;background:#F0EBE5;border-radius:2px;max-width:220px;margin:14px auto 0;overflow:hidden;">
+        <div style="height:100%;background:var(--p1);border-radius:2px;width:${Math.min(elapsed/50*100,95)}%;transition:width 1s linear;"></div>
+      </div>
+    </div>`;
+    el.classList.remove("hidden");
+  }, 1000);
+
+  // Wait for server with 3 min hard cap
+  await Promise.race([_warmupPromise, _sleep(180000)]);
+  clearInterval(interval);
+  return _serverReady;
+}
+
+async function fetchWithRetry(url, opts={}) {
+  // Ensure server is alive before making any API call
+  await _ensureServerReady();
+
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 30000);
+  try {
+    const res = await fetch(url, { ...opts, signal: ctrl.signal });
+    clearTimeout(t);
+    // Got a 502/503? Server may have just restarted — wait and retry once
+    if (res.status === 502 || res.status === 503) {
+      _serverReady = false;
+      _warmupPromise = null;
+      await _ensureServerReady();
+      return fetchWithRetry(url, opts);
+    }
+    return res;
+  } catch(e) {
+    clearTimeout(t);
+    // Hard failure — reset and retry once
+    _serverReady = false;
+    _warmupPromise = null;
+    const ready = await _ensureServerReady();
+    if (!ready) throw e;
+    return fetch(url, opts);
+  }
 }
 
 function renderHeader() {
