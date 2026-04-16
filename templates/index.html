@@ -687,6 +687,52 @@ let activeTab = "professor";
 let currentUser = (INIT_USER && INIT_USER.uid) ? INIT_USER : null;
 let bookmarkSet = new Set(); // ref_ids the user has bookmarked
 
+// ── Simple fetch with retry (cold-start safe) ────────────────────────────
+async function fetchWithRetry(url, opts={}) {
+  const MAX = 8;
+  for (let i = 0; i < MAX; i++) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 28000);
+    try {
+      const res = await fetch(url, { ...opts, signal: ctrl.signal });
+      clearTimeout(t);
+      if (res.status !== 502 && res.status !== 503) return res;
+    } catch(e) {
+      clearTimeout(t);
+    }
+    if (i === 0) _showWakeCard();
+    await new Promise(r => setTimeout(r, 7000));
+  }
+  throw new Error('Server unavailable');
+}
+
+let _wakeInterval = null;
+function _showWakeCard() {
+  const el = document.getElementById('searchResults');
+  if (!el) return;
+  let secs = 0;
+  if (_wakeInterval) clearInterval(_wakeInterval);
+  _wakeInterval = setInterval(() => {
+    secs++;
+    const bar = document.getElementById('_wakeBar');
+    const num = document.getElementById('_wakeSecs');
+    if (bar) bar.style.width = Math.min(secs / 55 * 100, 95) + '%';
+    if (num) num.textContent = secs + 's';
+  }, 1000);
+  el.innerHTML = `<div class="card" style="padding:28px 20px;text-align:center;">
+    <div style="font-size:34px;margin-bottom:12px;display:inline-block;" class="spinner">⚙️</div>
+    <p style="font-weight:800;font-size:15px;color:#374151;margin-bottom:6px;">Server is waking up…</p>
+    <p style="font-size:12px;color:#9ca3af;line-height:1.7;max-width:280px;margin:0 auto;">
+      Free tier goes idle after 15 min. Usually ready in <strong>20–40 s</strong>.<br>
+      <span id="_wakeSecs" style="color:var(--p1);font-weight:700;">0s</span> elapsed — retrying automatically…
+    </p>
+    <div style="margin:14px auto 0;height:4px;background:#F0EBE5;border-radius:2px;max-width:220px;overflow:hidden;">
+      <div id="_wakeBar" style="height:100%;background:var(--p1);border-radius:2px;width:0%;transition:width 1s linear;"></div>
+    </div>
+  </div>`;
+  el.classList.remove('hidden');
+}
+
 // ── Init ───────────────────────────────────────────────────────────────────
 (function init() {
   renderHeader();
@@ -694,96 +740,11 @@ let bookmarkSet = new Set(); // ref_ids the user has bookmarked
   applyTheme(SCHOOL);
   renderSchoolGrid(COLLEGES);
   if (currentUser) loadBookmarkSet();
-  // Resolve school ID if loaded from localStorage without one
   if (!SCHOOL.id) resolveSchoolId(SCHOOL);
-  // Load trending + recent on startup
   renderRecent();
   loadTrending();
-  // Start warming the server immediately on page load — don't wait
-  _startWarmup();
+  fetch('/ping').catch(() => {});
 })();
-
-// ── Server warmup + fetch helper ──────────────────────────────────────────
-// Strategy: ping /ping repeatedly until the server responds, THEN search.
-// This way searches never race against a cold start — we wait first.
-const _sleep = ms => new Promise(r => setTimeout(r, ms));
-let _serverReady = false;
-let _warmupPromise = null;
-
-function _startWarmup() {
-  if (_warmupPromise) return _warmupPromise;
-  _warmupPromise = (async () => {
-    for (let i = 0; i < 20; i++) {          // up to ~3 min of pinging
-      try {
-        const ctrl = new AbortController();
-        const t = setTimeout(() => ctrl.abort(), 15000);
-        const res = await fetch('/ping', { signal: ctrl.signal });
-        clearTimeout(t);
-        if (res.ok) { _serverReady = true; return true; }
-      } catch(e) {}
-      await _sleep(8000);                    // 8 s between pings
-    }
-    return false;
-  })();
-  return _warmupPromise;
-}
-
-// Wait for server ready, showing UI feedback if it takes > 2 s
-async function _ensureServerReady(resultsElId) {
-  if (_serverReady) return true;
-  _startWarmup();
-  let elapsed = 0;
-  const interval = setInterval(() => {
-    elapsed += 1;
-    const el = document.getElementById(resultsElId || "searchResults");
-    if (!el) return;
-    el.innerHTML = `<div class="card" style="padding:28px;text-align:center;">
-      <div style="font-size:32px;margin-bottom:12px;display:inline-block;" class="spinner">⚙️</div>
-      <p style="font-weight:800;font-size:15px;color:#374151;margin-bottom:8px;">Server is waking up…</p>
-      <p style="font-size:12px;color:#9ca3af;line-height:1.6;max-width:300px;margin:0 auto;">
-        Our free server was idle. This takes <strong>20–50 seconds</strong> on first load.<br>
-        <span style="color:var(--p1);font-weight:700;">${elapsed}s</span> — searching automatically when ready…
-      </p>
-      <div style="margin-top:14px;height:4px;background:#F0EBE5;border-radius:2px;max-width:220px;margin:14px auto 0;overflow:hidden;">
-        <div style="height:100%;background:var(--p1);border-radius:2px;width:${Math.min(elapsed/50*100,95)}%;transition:width 1s linear;"></div>
-      </div>
-    </div>`;
-    el.classList.remove("hidden");
-  }, 1000);
-
-  // Wait for server with 3 min hard cap
-  await Promise.race([_warmupPromise, _sleep(180000)]);
-  clearInterval(interval);
-  return _serverReady;
-}
-
-async function fetchWithRetry(url, opts={}) {
-  // Ensure server is alive before making any API call
-  await _ensureServerReady();
-
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 30000);
-  try {
-    const res = await fetch(url, { ...opts, signal: ctrl.signal });
-    clearTimeout(t);
-    // Got a 502/503? Server may have just restarted — wait and retry once
-    if (res.status === 502 || res.status === 503) {
-      _serverReady = false;
-      _warmupPromise = null;
-      await _ensureServerReady();
-      return fetchWithRetry(url, opts);
-    }
-    return res;
-  } catch(e) {
-    clearTimeout(t);
-    // Hard failure — reset and retry once
-    _serverReady = false;
-    _warmupPromise = null;
-    const ready = await _ensureServerReady();
-    if (!ready) throw e;
-    return fetch(url, opts);
-  }
-}
 
 function renderHeader() {
   const hr = document.getElementById("headerRight");
