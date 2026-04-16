@@ -687,18 +687,23 @@ let activeTab = "professor";
 let currentUser = (INIT_USER && INIT_USER.uid) ? INIT_USER : null;
 let bookmarkSet = new Set(); // ref_ids the user has bookmarked
 
-// ── Fetch with cold-start handling ───────────────────────────────────────────
+// ── Fetch helper ─────────────────────────────────────────────────────────────
+// No manual AbortController — we never cut a live connection early.
+// On cold start Render holds the socket open until Flask is ready (~20-40s);
+// on 502/503 we retry every 5 s for up to 60 s total.
 let _wakeInterval = null;
+let _wakeTimer    = null;
 
 function _showWakeCard() {
   const el = document.getElementById('searchResults');
-  if (!el || _wakeInterval) return; // already showing
+  if (!el) return;
+  if (_wakeInterval) return; // already counting
   let secs = 0;
   _wakeInterval = setInterval(() => {
     secs++;
     const bar = document.getElementById('_wakeBar');
     const num = document.getElementById('_wakeSecs');
-    if (bar) bar.style.width = Math.min(secs / 55 * 100, 95) + '%';
+    if (bar) bar.style.width = Math.min(secs / 50 * 100, 96) + '%';
     if (num) num.textContent = secs + 's';
   }, 1000);
   el.innerHTML = `<div class="card" style="padding:28px 20px;text-align:center;">
@@ -706,7 +711,7 @@ function _showWakeCard() {
     <p style="font-weight:800;font-size:15px;color:#374151;margin-bottom:6px;">Server is waking up…</p>
     <p style="font-size:12px;color:#9ca3af;line-height:1.7;max-width:280px;margin:0 auto;">
       Free tier goes idle after 15 min. Usually ready in <strong>20–40 s</strong>.<br>
-      <span id="_wakeSecs" style="color:var(--p1);font-weight:700;">0s</span> elapsed — retrying automatically…
+      <span id="_wakeSecs" style="color:var(--p1);font-weight:700;">0s</span> — hang tight, retrying…
     </p>
     <div style="margin:14px auto 0;height:4px;background:#F0EBE5;border-radius:2px;max-width:220px;overflow:hidden;">
       <div id="_wakeBar" style="height:100%;background:var(--p1);border-radius:2px;width:0%;transition:width 1s linear;"></div>
@@ -715,38 +720,32 @@ function _showWakeCard() {
   el.classList.remove('hidden');
 }
 
-async function fetchWithRetry(url, opts={}) {
-  // Show wake card after 4s if the request is still pending
-  let wakeTimer = setTimeout(_showWakeCard, 4000);
-
-  for (let i = 0; i < 4; i++) {
-    const ctrl = new AbortController();
-    // First attempt: 90s timeout — Render holds the connection open during
-    // cold start; we must wait it out rather than abort and retry endlessly.
-    // Subsequent attempts: 35s (server is already awake by then).
-    const ms = (i === 0) ? 90000 : 35000;
-    const t = setTimeout(() => ctrl.abort(), ms);
-    try {
-      const res = await fetch(url, { ...opts, signal: ctrl.signal });
-      clearTimeout(t);
-      if (res.status !== 502 && res.status !== 503) {
-        // Success — clean up wake card
-        clearTimeout(wakeTimer);
-        if (_wakeInterval) { clearInterval(_wakeInterval); _wakeInterval = null; }
-        return res;
-      }
-      // 502/503: Render is still starting — fall through to retry
-      clearTimeout(t);
-    } catch(e) {
-      clearTimeout(t);
-    }
-    // Ensure wake card is visible, then wait before retrying
-    clearTimeout(wakeTimer); wakeTimer = null;
-    _showWakeCard();
-    if (i < 3) await new Promise(r => setTimeout(r, 8000));
-  }
+function _clearWakeCard() {
+  clearTimeout(_wakeTimer); _wakeTimer = null;
   if (_wakeInterval) { clearInterval(_wakeInterval); _wakeInterval = null; }
-  throw new Error('Server unavailable');
+}
+
+async function fetchWithRetry(url, opts={}) {
+  // Schedule wake card only if request is still in-flight after 5 s
+  _wakeTimer = setTimeout(_showWakeCard, 5000);
+  try {
+    for (let i = 0; i < 12; i++) {
+      try {
+        const res = await fetch(url, opts); // no artificial timeout
+        if (res.status !== 502 && res.status !== 503) {
+          _clearWakeCard();
+          return res;
+        }
+      } catch (_) { /* network hiccup — retry */ }
+      // 502/503 or network error: show card immediately and wait
+      clearTimeout(_wakeTimer); _wakeTimer = null;
+      _showWakeCard();
+      await new Promise(r => setTimeout(r, 5000));
+    }
+  } finally {
+    _clearWakeCard();
+  }
+  throw new Error('Server unavailable after retries');
 }
 
 // ── Init ───────────────────────────────────────────────────────────────────
