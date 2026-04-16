@@ -4,6 +4,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 import threading
 import os
+import time
 import bcrypt
 import rmp
 import reddit_scraper
@@ -49,7 +50,21 @@ def _warmup():
     except Exception:
         pass
 
+def _self_ping():
+    """Ping ourselves every 14 min to prevent Render free-tier sleep."""
+    import urllib.request
+    time.sleep(60)  # wait for server to be ready first
+    while True:
+        try:
+            host = os.environ.get("RENDER_EXTERNAL_URL", "")
+            if host:
+                urllib.request.urlopen(f"{host}/ping", timeout=10)
+        except Exception:
+            pass
+        time.sleep(840)  # 14 minutes
+
 threading.Thread(target=_warmup, daemon=True).start()
+threading.Thread(target=_self_ping, daemon=True).start()
 rmp.start_auto_refresh()
 
 
