@@ -1,13 +1,18 @@
-from flask import Flask, request, jsonify, render_template, redirect, make_response
+from flask import Flask, request, jsonify, render_template, redirect, make_response, session
 from flask_cors import CORS
 import threading
 import os
 import rmp
 import reddit_scraper
 import payment
+import auth
 
 app = Flask(__name__)
 CORS(app)
+app.secret_key = os.environ.get("SECRET_KEY", "dev-secret-change-in-prod")
+
+# Initialise the user DB at startup
+auth.init_db()
 
 
 def _warmup():
@@ -20,6 +25,38 @@ threading.Thread(target=_warmup, daemon=True).start()
 
 # Auto-refresh all active school indexes every 6 hours in the background
 rmp.start_auto_refresh()
+
+
+# ── Premium helper ────────────────────────────────────────────────────────────
+
+def _is_premium():
+    """True if the current request has a valid premium entitlement.
+
+    Checks the logged-in user's DB subscription first, then falls back to
+    the legacy JWT cookie so users who paid without an account still work.
+    """
+    user = auth.current_user()
+    if user:
+        # Lazily re-check Stripe when the stored period end is within 2 days
+        import time
+        expires_at = user.get("subscription_expires_at") or 0
+        if auth.is_active(user) and float(expires_at) - time.time() < 2 * 24 * 3600:
+            sub_id = user.get("stripe_subscription_id")
+            if sub_id:
+                active, new_end = payment._check_stripe_subscription(sub_id)
+                new_status = "active" if active else "inactive"
+                auth.update_subscription(
+                    user["id"],
+                    user.get("stripe_customer_id"),
+                    sub_id,
+                    new_status,
+                    new_end,
+                )
+                # Refresh user from DB
+                user = auth.get_user_by_id(user["id"])
+        if user and auth.is_active(user):
+            return True
+    return payment.is_premium(request)
 
 
 # ── Owner bypass ──────────────────────────────────────────────────────────────
@@ -44,9 +81,14 @@ def pay_page():
 @app.route("/create-checkout")
 def create_checkout():
     base_url = request.host_url.rstrip("/")
+    user = auth.current_user()
     try:
-        session = payment.create_checkout_session(base_url)
-        return redirect(session.url)
+        session_kwargs = {}
+        if user:
+            session_kwargs["client_reference_id"] = str(user["id"])
+            session_kwargs["customer_email"] = user["email"]
+        stripe_session = payment.create_checkout_session(base_url, **session_kwargs)
+        return redirect(stripe_session.url)
     except Exception as e:
         return redirect(f"/pay?error={str(e)}")
 
@@ -59,6 +101,13 @@ def payment_success():
         sub_id, customer_id, period_end = payment.get_subscription_from_session(session_id)
     except Exception:
         return redirect("/pay?error=Payment+verification+failed")
+
+    user = auth.current_user()
+    if user:
+        auth.update_subscription(user["id"], customer_id, sub_id, "active", period_end)
+        return redirect("/account")
+
+    # Fallback: legacy JWT cookie for users without accounts
     resp = make_response(redirect("/"))
     payment.issue_access_cookie(resp, session_id,
                                 subscription_id=sub_id,
@@ -69,7 +118,13 @@ def payment_success():
 
 @app.route("/manage-billing")
 def manage_billing():
-    customer_id = payment.get_customer_id(request)
+    # Prefer DB-stored customer ID for logged-in users
+    user = auth.current_user()
+    if user and user.get("stripe_customer_id"):
+        customer_id = user["stripe_customer_id"]
+    else:
+        customer_id = payment.get_customer_id(request)
+
     if not customer_id:
         return redirect("/pay")
     base_url = request.host_url.rstrip("/")
@@ -80,12 +135,63 @@ def manage_billing():
         return redirect(f"/?error={str(e)}")
 
 
+# ── Auth routes ───────────────────────────────────────────────────────────────
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
+        user = auth.verify_password(email, password)
+        if not user:
+            return render_template("login.html", error="Invalid email or password.")
+        auth.login_user(user)
+        return redirect("/account")
+    return render_template("login.html", error=None)
+
+
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        email = request.form.get("email", "").strip()
+        password = request.form.get("password", "")
+        confirm = request.form.get("confirm_password", "")
+        if not email or not password:
+            return render_template("signup.html", error="Email and password are required.")
+        if password != confirm:
+            return render_template("signup.html", error="Passwords do not match.")
+        if len(password) < 6:
+            return render_template("signup.html", error="Password must be at least 6 characters.")
+        user = auth.create_user(email, password)
+        if user is None:
+            return render_template("signup.html", error="An account with that email already exists.")
+        auth.login_user(user)
+        return redirect("/pay")
+    return render_template("signup.html", error=None)
+
+
+@app.route("/logout")
+def logout():
+    auth.logout_user()
+    return redirect("/")
+
+
+@app.route("/account")
+def account():
+    user = auth.current_user()
+    if not user:
+        return redirect("/login")
+    premium = _is_premium()
+    return render_template("account.html", user=user, premium=premium)
+
+
 # ── Free routes ───────────────────────────────────────────────────────────────
 
 @app.route("/")
 def index():
-    premium = payment.is_premium(request)
-    return render_template("index.html", premium=premium)
+    premium = _is_premium()
+    user = auth.current_user()
+    return render_template("index.html", premium=premium, user=user)
 
 @app.route("/api/schools")
 def school_search():
@@ -100,7 +206,7 @@ def school_search():
 
 @app.route("/api/search")
 def search():
-    if not payment.is_premium(request):
+    if not _is_premium():
         return jsonify({"error": "premium_required"}), 403
     name      = request.args.get("name", "").strip()
     school_id = request.args.get("school_id", "").strip() or None
@@ -153,7 +259,7 @@ def professor_detail(professor_id):
             "rmpUrl": rmp_url,
             "courseCodes": data.get("courseCodes", []),
         }
-        premium = payment.is_premium(request)
+        premium = _is_premium()
         if not premium:
             return jsonify({"professor": prof_base, "ratings": ratings_list[:3],
                             "easyA": None, "examMentions": [], "redditPosts": [], "isPremium": False})

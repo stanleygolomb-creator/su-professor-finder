@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Account — SU Professor Finder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #FFFAF5; min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(160deg, #C03E00 0%, #E85D00 45%, #FF7A1A 80%, #FF9A45 100%);
+      padding: 20px 24px 0;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: "";
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    .topbar { display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 10; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-text { color: rgba(255,255,255,0.95); font-weight: 800; font-size: 15px; letter-spacing: -0.2px; }
+    .brand-sub  { color: rgba(255,255,255,0.55); font-size: 11px; font-weight: 500; }
+    .back-link  { color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 4px; }
+    .back-link:hover { color: #fff; }
+
+    .hero-center { text-align: center; padding: 28px 16px 50px; position: relative; z-index: 10; }
+    .avatar {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(255,255,255,0.22); border: 2.5px solid rgba(255,255,255,0.4);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 28px; margin-bottom: 12px;
+    }
+    .hero-center h1 { font-size: clamp(18px, 4vw, 26px); font-weight: 900; color: #fff; letter-spacing: -0.5px; text-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+    .hero-center .email { color: rgba(255,255,255,0.68); font-size: 13px; margin-top: 5px; }
+
+    /* Card */
+    main { flex: 1; display: flex; justify-content: center; padding: 0 16px 60px; margin-top: -24px; position: relative; z-index: 20; }
+    .account-card {
+      background: #fff; border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.06);
+      padding: 28px; max-width: 460px; width: 100%; align-self: flex-start;
+    }
+
+    .section-label {
+      font-size: 10px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+      color: #b8b0a6; margin-bottom: 12px;
+    }
+
+    /* Subscription status */
+    .status-active {
+      display: flex; align-items: center; gap: 12px;
+      background: #F0FDF4; border: 1.5px solid #BBF7D0;
+      border-radius: 14px; padding: 16px;
+    }
+    .status-inactive {
+      display: flex; align-items: center; gap: 12px;
+      background: #FFF8F2; border: 1.5px solid #FDBA74;
+      border-radius: 14px; padding: 16px;
+    }
+    .status-ico { font-size: 26px; flex-shrink: 0; }
+    .status-title { font-weight: 800; font-size: 14px; }
+    .status-active .status-title  { color: #15803d; }
+    .status-inactive .status-title { color: #C03E00; }
+    .status-sub { font-size: 12px; color: #6b7280; margin-top: 3px; line-height: 1.5; }
+
+    /* Buttons */
+    .btn-primary {
+      display: inline-block; margin-top: 16px;
+      background: linear-gradient(135deg, #F76900, #C03E00);
+      color: #fff; font-family: 'Inter', sans-serif;
+      font-size: 14px; font-weight: 800;
+      padding: 13px 22px; border-radius: 12px; border: none;
+      cursor: pointer; text-decoration: none;
+      box-shadow: 0 4px 18px rgba(192,62,0,0.28);
+      transition: opacity 0.15s, transform 0.1s; width: 100%; text-align: center;
+    }
+    .btn-primary:hover  { opacity: 0.92; transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+
+    .btn-secondary {
+      display: inline-block; margin-top: 10px;
+      background: #F5F0EB; color: #374151;
+      font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 700;
+      padding: 13px 22px; border-radius: 12px; border: 1.5px solid #E5DDD5;
+      cursor: pointer; text-decoration: none;
+      transition: background 0.15s; width: 100%; text-align: center;
+    }
+    .btn-secondary:hover { background: #EDE6DE; }
+
+    .divider { height: 1px; background: #F0EBE5; margin: 24px 0; }
+
+    .logout-row { text-align: center; }
+    .logout-link { color: #9ca3af; font-size: 13px; font-weight: 600; text-decoration: none; }
+    .logout-link:hover { color: #C03E00; }
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <div class="topbar">
+      <div class="brand">
+        <span style="font-size:24px;">🍊</span>
+        <div>
+          <div class="brand-text">SU Professor Finder</div>
+          <div class="brand-sub">Syracuse University</div>
+        </div>
+      </div>
+      <a href="/" class="back-link">← Home</a>
+    </div>
+    <div class="hero-center">
+      <div class="avatar">👤</div>
+      <h1>My Account</h1>
+      <div class="email">{{ user.email }}</div>
+    </div>
+  </div>
+
+  <main>
+    <div class="account-card">
+
+      <p class="section-label">Subscription</p>
+
+      {% if premium %}
+      <div class="status-active">
+        <div class="status-ico">⭐</div>
+        <div>
+          <div class="status-title">Premium Active</div>
+          {% if user.subscription_expires_at and user.subscription_expires_at > 0 %}
+          <div class="status-sub">
+            Renews {{ (user.subscription_expires_at | int) | datetimeformat if datetimeformat is defined else "" }}
+            —&nbsp;auto-renews monthly
+          </div>
+          {% else %}
+          <div class="status-sub">Your subscription is active.</div>
+          {% endif %}
+        </div>
+      </div>
+      <a href="/manage-billing" class="btn-secondary">Manage Billing →</a>
+
+      {% else %}
+      <div class="status-inactive">
+        <div class="status-ico">🔓</div>
+        <div>
+          <div class="status-title">No active subscription</div>
+          <div class="status-sub">Upgrade to access professor search, Easy A scores, Reddit mentions, and more.</div>
+        </div>
+      </div>
+      <a href="/pay" class="btn-primary">Upgrade — $2/mo →</a>
+      {% endif %}
+
+      <div class="divider"></div>
+
+      <div class="logout-row">
+        <a href="/logout" class="logout-link">Log out</a>
+      </div>
+
+    </div>
+  </main>
+
+  {% if premium and user.subscription_expires_at and user.subscription_expires_at > 0 %}
+  <script>
+    // Show human-readable renewal date
+    const ts = {{ user.subscription_expires_at | tojson }};
+    const d = new Date(ts * 1000);
+    const formatted = d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    const subEl = document.querySelector('.status-sub');
+    if (subEl) subEl.textContent = 'Renews ' + formatted + ' — auto-renews monthly';
+  </script>
+  {% endif %}
+
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Log In — SU Professor Finder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', sans-serif; background: #FFFAF5; min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* Hero */
+    .hero {
+      background: linear-gradient(160deg, #C03E00 0%, #E85D00 45%, #FF7A1A 80%, #FF9A45 100%);
+      padding: 20px 24px 0;
+      position: relative; overflow: hidden;
+    }
+    .hero::before {
+      content: "";
+      position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      pointer-events: none;
+    }
+    .topbar { display: flex; align-items: center; justify-content: space-between; position: relative; z-index: 10; }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-text { color: rgba(255,255,255,0.95); font-weight: 800; font-size: 15px; letter-spacing: -0.2px; }
+    .brand-sub  { color: rgba(255,255,255,0.55); font-size: 11px; font-weight: 500; }
+    .back-link  { color: rgba(255,255,255,0.7); font-size: 12px; font-weight: 600; text-decoration: none; display: flex; align-items: center; gap: 4px; }
+    .back-link:hover { color: #fff; }
+
+    .hero-center { text-align: center; padding: 32px 16px 52px; position: relative; z-index: 10; }
+    .otto { font-size: 56px; line-height: 1; display: block; margin-bottom: 12px;
+      filter: drop-shadow(0 8px 20px rgba(0,0,0,0.18));
+      animation: bob 3s ease-in-out infinite; }
+    @keyframes bob { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-7px)} }
+    .hero-center h1 { font-size: clamp(22px, 5vw, 32px); font-weight: 900; color: #fff; letter-spacing: -1px; line-height: 1.1; text-shadow: 0 2px 12px rgba(0,0,0,0.15); }
+    .hero-center p  { color: rgba(255,255,255,0.75); font-size: 13px; margin-top: 8px; }
+
+    /* Card */
+    main { flex: 1; display: flex; justify-content: center; padding: 0 16px 60px; margin-top: -28px; position: relative; z-index: 20; }
+    .auth-card {
+      background: #fff; border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.06);
+      padding: 32px 28px; max-width: 440px; width: 100%; align-self: flex-start;
+    }
+
+    /* Form */
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 12px; font-weight: 700; color: #374151; margin-bottom: 6px; }
+    input[type="email"], input[type="password"] {
+      width: 100%; padding: 14px 16px; border-radius: 12px;
+      border: 1.5px solid #E5DDD5; font-family: 'Inter', sans-serif;
+      font-size: 14px; background: #FFFAF7; outline: none;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    input[type="email"]:focus, input[type="password"]:focus {
+      border-color: #C03E00; background: #fff;
+    }
+    input::placeholder { color: #c4b8ad; }
+
+    .cta-btn {
+      display: block; width: 100%;
+      background: linear-gradient(135deg, #F76900, #C03E00);
+      color: #fff; font-family: 'Inter', sans-serif;
+      font-size: 15px; font-weight: 900; letter-spacing: -0.2px;
+      padding: 16px 24px; border-radius: 14px; border: none;
+      cursor: pointer; text-decoration: none; text-align: center;
+      box-shadow: 0 6px 24px rgba(192,62,0,0.28);
+      transition: opacity 0.15s, transform 0.1s;
+      margin-top: 8px;
+    }
+    .cta-btn:hover  { opacity: 0.92; transform: translateY(-1px); }
+    .cta-btn:active { transform: translateY(0); }
+
+    .divider { height: 1px; background: #F0EBE5; margin: 24px 0; }
+
+    .switch-link { text-align: center; font-size: 13px; color: #9ca3af; }
+    .switch-link a { color: #C03E00; font-weight: 700; text-decoration: none; }
+    .switch-link a:hover { text-decoration: underline; }
+
+    /* Error */
+    .error-box {
+      background: #FEF2F2; border: 1px solid #FECACA;
+      border-radius: 10px; padding: 11px 14px;
+      color: #ef4444; font-size: 13px; margin-bottom: 18px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="hero">
+    <div class="topbar">
+      <div class="brand">
+        <span style="font-size:24px;">🍊</span>
+        <div>
+          <div class="brand-text">SU Professor Finder</div>
+          <div class="brand-sub">Syracuse University</div>
+        </div>
+      </div>
+      <a href="/" class="back-link">← Back</a>
+    </div>
+    <div class="hero-center">
+      <span class="otto">🍊</span>
+      <h1>Welcome back</h1>
+      <p>Sign in to access your account.</p>
+    </div>
+  </div>
+
+  <main>
+    <div class="auth-card">
+
+      {% if error %}
+      <div class="error-box">{{ error }}</div>
+      {% endif %}
+
+      <form method="POST" action="/login">
+        <div class="form-group">
+          <label for="email">Email address</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email"/>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="••••••••" required autocomplete="current-password"/>
+        </div>
+        <button type="submit" class="cta-btn">Log In</button>
+      </form>
+
+      <div class="divider"></div>
+
+      <p class="switch-link">No account? <a href="/signup">Sign up</a></p>
+
+    </div>
+  </main>
+
+</body>
+</html>

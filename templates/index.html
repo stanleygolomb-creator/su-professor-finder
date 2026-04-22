@@ -160,7 +160,10 @@
   </style>
 </head>
 <body>
-  <script>const IS_PREMIUM = {{ premium | tojson }};</script>
+  <script>
+    const IS_PREMIUM = {{ premium | tojson }};
+    const IS_LOGGED_IN = {{ (user != None) | tojson }};
+  </script>
 
   <!-- ── HERO ── -->
   <div class="hero" id="hero">
@@ -358,10 +361,23 @@ let activeTab = "professor";
 
 // ── Init ───────────────────────────────────────────────────────────────────
 (function init() {
-  document.getElementById("headerRight").innerHTML = IS_PREMIUM
-    ? `<span class="tier-btn tier-premium">⭐ Premium</span>`
-    : `<a href="/pay" class="tier-btn tier-free">Upgrade $2/mo →</a>`;
-  if (IS_PREMIUM) { const c=document.getElementById("proChip"); if(c) c.style.display="none"; }
+  let headerHtml = "";
+  if (IS_PREMIUM) {
+    // Premium user (logged in or cookie)
+    headerHtml = `<span class="tier-btn tier-premium">⭐ Premium</span>`;
+    if (IS_LOGGED_IN) {
+      headerHtml += `&nbsp;<a href="/account" style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.7);text-decoration:none;margin-left:6px;">Account →</a>`;
+    }
+    const c = document.getElementById("proChip");
+    if (c) c.style.display = "none";
+  } else if (IS_LOGGED_IN) {
+    // Logged in but not premium
+    headerHtml = `<a href="/pay" class="tier-btn tier-free">Upgrade $2/mo →</a>&nbsp;<a href="/account" style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.7);text-decoration:none;margin-left:6px;">Account</a>`;
+  } else {
+    // Not logged in
+    headerHtml = `<a href="/pay" class="tier-btn tier-free">Upgrade $2/mo →</a>&nbsp;<a href="/login" style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.7);text-decoration:none;margin-left:6px;">Log in</a>`;
+  }
+  document.getElementById("headerRight").innerHTML = headerHtml;
   applyTheme(SCHOOL);
   renderSchoolGrid(COLLEGES);
 })();

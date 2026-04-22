@@ -103,9 +103,14 @@ def issue_access_cookie(resp, session_id: str,
     return resp
 
 
-def create_checkout_session(base_url: str):
-    """Create a Stripe Checkout session for a $2/month subscription."""
-    return stripe.checkout.Session.create(
+def create_checkout_session(base_url: str, **kwargs):
+    """Create a Stripe Checkout session for a $2/month subscription.
+
+    Extra keyword arguments (e.g. client_reference_id, customer_email) are
+    forwarded directly to stripe.checkout.Session.create so that logged-in
+    users can be linked to their Stripe customer record.
+    """
+    params = dict(
         payment_method_types=["card"],
         mode="subscription",
         line_items=[{
@@ -127,6 +132,11 @@ def create_checkout_session(base_url: str):
         cancel_url=f"{base_url}/pay",
         customer_creation="always",
     )
+    params.update(kwargs)
+    # If a customer_email is provided, Stripe doesn't want customer_creation
+    if "customer_email" in params:
+        params.pop("customer_creation", None)
+    return stripe.checkout.Session.create(**params)
 
 
 def get_subscription_from_session(session_id: str):
