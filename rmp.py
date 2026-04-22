@@ -204,7 +204,7 @@ def _fetch_professor_page(text: str, school_id: str) -> list:
 def _do_build_index(school_id: str) -> dict:
     """Actually hits RMP and builds a fresh professor index."""
     single  = list(string.ascii_lowercase)
-    two_ltr = [a + b for a in "sbcmhwtgjp" for b in string.ascii_lowercase]
+    two_ltr = [a + b for a in string.ascii_lowercase for b in string.ascii_lowercase]
     queries = single + two_ltr
 
     profs: dict = {}
