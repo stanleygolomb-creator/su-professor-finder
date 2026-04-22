@@ -53,14 +53,31 @@ def create_checkout():
 @app.route("/payment-success")
 def payment_success():
     session_id = request.args.get("session_id", "")
+    if not session_id:
+        return redirect("/pay?error=Payment+could+not+be+verified")
     try:
-        if not session_id or not payment.verify_session(session_id):
-            return redirect("/pay?error=Payment+could+not+be+verified")
+        sub_id, customer_id, period_end = payment.get_subscription_from_session(session_id)
     except Exception:
         return redirect("/pay?error=Payment+verification+failed")
     resp = make_response(redirect("/"))
-    payment.issue_access_cookie(resp, session_id)
+    payment.issue_access_cookie(resp, session_id,
+                                subscription_id=sub_id,
+                                customer_id=customer_id,
+                                expires_at=period_end)
     return resp
+
+
+@app.route("/manage-billing")
+def manage_billing():
+    customer_id = payment.get_customer_id(request)
+    if not customer_id:
+        return redirect("/pay")
+    base_url = request.host_url.rstrip("/")
+    try:
+        url = payment.create_portal_session(customer_id, base_url)
+        return redirect(url)
+    except Exception as e:
+        return redirect(f"/?error={str(e)}")
 
 
 # ── Free routes ───────────────────────────────────────────────────────────────
@@ -83,6 +100,8 @@ def school_search():
 
 @app.route("/api/search")
 def search():
+    if not payment.is_premium(request):
+        return jsonify({"error": "premium_required"}), 403
     name      = request.args.get("name", "").strip()
     school_id = request.args.get("school_id", "").strip() or None
     if not name or len(name) < 2:
@@ -99,18 +118,16 @@ def index_status():
     return jsonify({"cached": rmp.is_cache_fresh(school_id)})
 
 
-# ── Premium routes ────────────────────────────────────────────────────────────
+# ── Free routes (course search) ───────────────────────────────────────────────
 
 @app.route("/api/course")
 def course_search():
-    if not payment.is_premium(request):
-        return jsonify({"error": "premium_required"}), 403
     course    = request.args.get("course", "").strip()
     school_id = request.args.get("school_id", "").strip() or None
     if not course or len(course) < 2:
         return jsonify({"error": "Please enter a course name or code"}), 400
     try:
-        ranked     = rmp.search_by_course(course, school_id)
+        ranked      = rmp.search_by_course(course, school_id)
         cache_fresh = rmp.is_cache_fresh(school_id)
         return jsonify({"results": ranked, "course": course, "fromCache": cache_fresh})
     except Exception as e:

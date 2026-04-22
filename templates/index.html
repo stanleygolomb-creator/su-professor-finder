@@ -196,18 +196,23 @@
     <!-- Search card -->
     <div class="search-card">
       <div class="tab-strip">
-        <button class="tab-btn on" id="tabProfessor" onclick="setTab('professor')">👤 Professor</button>
-        <button class="tab-btn"    id="tabCourse"    onclick="setTab('course')">
-          📚 Course<span class="pro-chip" id="proChip">PRO</span>
+        <button class="tab-btn on" id="tabProfessor" onclick="setTab('professor')">
+          👤 Professor<span class="pro-chip" id="proChip">PRO</span>
         </button>
+        <button class="tab-btn"    id="tabCourse"    onclick="setTab('course')">📚 Course</button>
         <button class="tab-btn"    id="tabCollege"   onclick="setTab('college')">🎓 College</button>
       </div>
       <div id="panelProfessor">
+        {% if premium %}
         <div class="search-row">
           <input id="searchInput" type="text" placeholder="Search by last name…" onkeydown="if(event.key==='Enter')doSearch()"/>
           <button class="search-btn" onclick="doSearch()">Search</button>
         </div>
-        <p class="hint">Free · <span id="searchSchoolHint">Syracuse University</span></p>
+        <p class="hint">Premium · <span id="searchSchoolHint">Syracuse University</span></p>
+        {% else %}
+        <div style="padding:4px 4px 8px;"><div class="lock-card"><div class="lock-row"><div class="lock-ico">🔒</div><div><p class="lock-title">Professor Search — Premium</p><p class="lock-sub">Search any professor by name and see their ratings, reviews, Easy A score, and more.</p></div></div><a href="/pay" style="display:block;text-align:center;margin-top:14px;background:linear-gradient(135deg,var(--p2),var(--p1));color:#fff;font-weight:800;font-size:14px;padding:13px;border-radius:12px;text-decoration:none;">Upgrade — $2/mo</a></div></div>
+        <p class="hint" style="visibility:hidden;">· <span id="searchSchoolHint">Syracuse University</span></p>
+        {% endif %}
       </div>
       <div id="panelCourse" class="hidden"><div id="courseArea"></div></div>
       <div id="panelCollege" class="hidden">
@@ -355,7 +360,7 @@ let activeTab = "professor";
 (function init() {
   document.getElementById("headerRight").innerHTML = IS_PREMIUM
     ? `<span class="tier-btn tier-premium">⭐ Premium</span>`
-    : `<a href="/pay" class="tier-btn tier-free">Upgrade $1.99 →</a>`;
+    : `<a href="/pay" class="tier-btn tier-free">Upgrade $2/mo →</a>`;
   if (IS_PREMIUM) { const c=document.getElementById("proChip"); if(c) c.style.display="none"; }
   applyTheme(SCHOOL);
   renderSchoolGrid(COLLEGES);
@@ -471,11 +476,7 @@ function onSchoolSearch(val) {
 // ── Course panel ──────────────────────────────────────────────────────────
 function renderCourseArea() {
   const el = document.getElementById("courseArea");
-  if (!IS_PREMIUM) {
-    el.innerHTML = `<div style="padding:4px 4px 8px;"><div class="lock-card"><div class="lock-row"><div class="lock-ico">🔒</div><div><p class="lock-title">Course Search — Premium Only</p><p class="lock-sub">Find every professor teaching a course at ${esc(SCHOOL.name)}, ranked by student data. One-time $1.99.</p></div></div><a href="/pay" style="display:block;text-align:center;margin-top:14px;background:linear-gradient(135deg,var(--p2),var(--p1));color:#fff;font-weight:800;font-size:14px;padding:13px;border-radius:12px;text-decoration:none;">Unlock Premium — $1.99</a></div></div>`;
-    return;
-  }
-  el.innerHTML = `<div class="search-row"><input id="courseInput" type="text" placeholder="Course code or name — e.g. MAT 295, Chemistry…" onkeydown="if(event.key==='Enter')doCourseSearch()"/><button class="search-btn" onclick="doCourseSearch()">Find Profs</button></div><p class="hint">Ranked by rating · ease · retake rate at ${esc(SCHOOL.name)}</p>`;
+  el.innerHTML = `<div class="search-row"><input id="courseInput" type="text" placeholder="Course code or name — e.g. MAT 295, Chemistry…" onkeydown="if(event.key==='Enter')doCourseSearch()"/><button class="search-btn" onclick="doCourseSearch()">Find Profs</button></div><p class="hint">Free · Ranked by rating · ease · retake rate at ${esc(SCHOOL.name)}</p>`;
 }
 
 // ── Course search ─────────────────────────────────────────────────────────
@@ -572,7 +573,7 @@ function renderProfDetail(data) {
       ?`<div style="background:#F0FDF4;border:1.5px solid #BBF7D0;border-radius:12px;padding:13px 15px;display:flex;gap:10px;align-items:center;margin-top:16px;"><span style="font-size:22px;">✅</span><div><p style="font-weight:800;color:#15803d;font-size:13px;">Likely an Easy A</p><p style="color:#16a34a;font-size:11px;margin-top:2px;">${easyA.reasons.join(" · ")}</p></div></div>`
       :`<div style="background:#FFFBEB;border:1.5px solid #FDE68A;border-radius:12px;padding:13px 15px;display:flex;gap:10px;align-items:center;margin-top:16px;"><span style="font-size:22px;">⚠️</span><div><p style="font-weight:800;color:#b45309;font-size:13px;">Not an Easy A</p><p style="color:#d97706;font-size:11px;margin-top:2px;">${easyA.reasons.length?easyA.reasons.join(" · "):"Moderate to high difficulty"}</p></div></div>`;
   } else if(!isPremium){
-    easyAHtml=`<div class="lock-card" style="margin-top:16px;"><div class="lock-row"><div class="lock-ico">🔒</div><div><p class="lock-title">Easy A Score</p><p class="lock-sub">Find out if this professor is an easy grader.</p></div><a href="/pay" class="unlock-btn">Unlock $1.99</a></div></div>`;
+    easyAHtml=`<div class="lock-card" style="margin-top:16px;"><div class="lock-row"><div class="lock-ico">🔒</div><div><p class="lock-title">Easy A Score</p><p class="lock-sub">Find out if this professor is an easy grader.</p></div><a href="/pay" class="unlock-btn">Upgrade $2/mo</a></div></div>`;
   }
 
   const gradeDist=isPremium&&easyA&&Object.keys(easyA.grade_distribution||{}).length
@@ -587,20 +588,20 @@ function renderProfDetail(data) {
     :`<p style="font-size:13px;color:#b8b0a6;">No reviews yet.</p>`;
 
   const moreReviews=!isPremium&&ratings.length>3
-    ?`<div class="lock-card" style="margin-top:10px;padding:16px;"><p style="font-weight:700;font-size:13px;color:#374151;">🔒 ${ratings.length-3} more review${ratings.length-3!==1?"s":""} with Premium</p><a href="/pay" style="display:inline-block;margin-top:10px;background:linear-gradient(135deg,var(--p2),var(--p1));color:#fff;font-size:12px;font-weight:800;padding:8px 20px;border-radius:10px;text-decoration:none;">See All Reviews — $1.99</a></div>`:""
+    ?`<div class="lock-card" style="margin-top:10px;padding:16px;"><p style="font-weight:700;font-size:13px;color:#374151;">🔒 ${ratings.length-3} more review${ratings.length-3!==1?"s":""} with Premium</p><a href="/pay" style="display:inline-block;margin-top:10px;background:linear-gradient(135deg,var(--p2),var(--p1));color:#fff;font-size:12px;font-weight:800;padding:8px 20px;border-radius:10px;text-decoration:none;">Upgrade — $2/mo</a></div>`:""
 
   const examHtml=isPremium
     ?(examMentions.length
       ?`<div class="card" style="padding:20px;margin-top:10px;"><p style="font-weight:800;font-size:14px;margin-bottom:12px;">📝 Exam Mentions <span class="tag" style="background:#DBEAFE;color:#2563eb;margin-left:4px;">${examMentions.length}</span></p><div style="display:flex;flex-direction:column;gap:8px;max-height:220px;overflow-y:auto;">${examMentions.slice(0,8).map(m=>`<div style="background:#FFFAF7;border-radius:10px;padding:10px 12px;"><p style="font-size:10px;font-weight:700;color:#b8b0a6;margin-bottom:4px;">${m.class||""}</p><p style="font-size:13px;color:#374151;font-style:italic;">"${esc(m.comment)}"</p><div class="tags" style="margin-top:5px;">${m.keywords.map(k=>`<span class="tag" style="background:#DBEAFE;color:#3b82f6;">${k}</span>`).join("")}</div></div>`).join("")}</div></div>`
       :`<div class="card" style="padding:20px;margin-top:10px;"><p style="font-weight:800;font-size:14px;">📝 Exam Mentions</p><p style="font-size:13px;color:#b8b0a6;margin-top:6px;">No exam mentions found.</p></div>`)
-    :`<div class="card" style="padding:20px;margin-top:10px;"><div class="lock-row"><div class="lock-ico">📝</div><div><p class="lock-title">Exam & Test Mentions</p><p class="lock-sub">See which reviews mention midterms, finals, and quizzes.</p></div><a href="/pay" class="unlock-btn">Unlock $1.99</a></div></div>`;
+    :`<div class="card" style="padding:20px;margin-top:10px;"><div class="lock-row"><div class="lock-ico">📝</div><div><p class="lock-title">Exam & Test Mentions</p><p class="lock-sub">See which reviews mention midterms, finals, and quizzes.</p></div><a href="/pay" class="unlock-btn">Upgrade $2/mo</a></div></div>`;
 
   const rl=`<svg width="18" height="18" fill="#F76900" viewBox="0 0 24 24"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>`;
   const redditHtml=isPremium
     ?(redditPosts.length
       ?`<div class="card" style="padding:20px;margin-top:10px;"><p style="font-weight:800;font-size:14px;margin-bottom:12px;display:flex;align-items:center;gap:7px;">${rl} Reddit Mentions <span class="tag" style="background:#FFF3E8;color:#C03E00;">${redditPosts.length}</span></p><div style="display:flex;flex-direction:column;gap:8px;">${redditPosts.slice(0,5).map(post=>`<a href="${esc(post.url)}" target="_blank" rel="noopener" style="display:block;background:#FFFAF7;border-radius:10px;padding:10px 12px;text-decoration:none;border:1.5px solid transparent;transition:border-color .15s;" onmouseover="this.style.borderColor='#FDBA74'" onmouseout="this.style.borderColor='transparent'"><p style="font-size:10px;font-weight:700;color:#F76900;margin-bottom:3px;">r/${esc(post.subreddit)} · ${post.score} pts</p><p style="font-size:13px;font-weight:700;color:#111827;">${esc(post.title)}</p>${post.selftext?`<p style="font-size:11px;color:#6b7280;margin-top:3px;">${esc(post.selftext.slice(0,150))}…</p>`:""}</a>`).join("")}</div></div>`
       :`<div class="card" style="padding:20px;margin-top:10px;"><p style="font-weight:800;font-size:14px;display:flex;align-items:center;gap:7px;">${rl} Reddit Mentions</p><p style="font-size:13px;color:#b8b0a6;margin-top:6px;">No Reddit posts found.</p></div>`)
-    :`<div class="card" style="padding:20px;margin-top:10px;"><div class="lock-row"><div class="lock-ico">${rl}</div><div><p class="lock-title">Reddit Mentions</p><p class="lock-sub">What students are saying on Reddit.</p></div><a href="/pay" class="unlock-btn">Unlock $1.99</a></div></div>`;
+    :`<div class="card" style="padding:20px;margin-top:10px;"><div class="lock-row"><div class="lock-ico">${rl}</div><div><p class="lock-title">Reddit Mentions</p><p class="lock-sub">What students are saying on Reddit.</p></div><a href="/pay" class="unlock-btn">Upgrade $2/mo</a></div></div>`;
 
   document.getElementById("profDetail").innerHTML=`<div style="display:flex;flex-direction:column;gap:10px;" class="fade-in"><div class="card" style="padding:22px;"><div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap;"><div style="width:70px;height:70px;border-radius:18px;background:${bg};display:flex;align-items:center;justify-content:center;font-weight:900;font-size:21px;color:#fff;flex-shrink:0;box-shadow:0 4px 16px rgba(0,0,0,.12);">${p.avgRating!=null?p.avgRating.toFixed(1):"?"}</div><div style="flex:1;min-width:0;"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px;"><h2 style="font-size:20px;font-weight:900;letter-spacing:-.5px;">${esc(p.name)}</h2><a href="${esc(p.rmpUrl)}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;background:color-mix(in srgb, var(--p1) 8%, white);color:var(--p1);border:1px solid color-mix(in srgb, var(--p1) 25%, white);border-radius:999px;padding:3px 10px;font-size:11px;font-weight:700;text-decoration:none;">RMP ↗</a></div><p style="font-size:12px;color:#b8b0a6;">${esc(p.department||"")}</p><div class="stat-grid"><div class="stat-chip"><div class="v" style="color:${p.avgRating>=4?"#16a34a":p.avgRating>=3?"#d97706":"#dc2626"};">${p.avgRating!=null?p.avgRating.toFixed(1):"—"}</div><div class="l">Rating</div></div><div class="stat-chip"><div class="v" style="color:${dc};">${p.avgDifficulty!=null?p.avgDifficulty.toFixed(1):"—"}</div><div class="l">Difficulty</div></div><div class="stat-chip"><div class="v">${wtag!=null?wtag+"%":"—"}</div><div class="l">Retake</div></div><div class="stat-chip"><div class="v">${p.numRatings??0}</div><div class="l">Reviews</div></div></div></div></div>${easyAHtml}${gradeDist}${courses}</div>${examHtml}<div class="card" style="padding:20px;"><p style="font-weight:800;font-size:14px;margin-bottom:12px;">💬 Student Reviews <span class="tag" style="background:#F5F5F4;color:#6b7280;margin-left:5px;">${isPremium?ratings.length+" total":"3 of "+ratings.length+" free"}</span></p>${reviewsHtml}${moreReviews}</div>${redditHtml}</div>`;
 }
