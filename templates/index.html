@@ -444,8 +444,9 @@ function selectSchool(jsonStr) {
         localStorage.setItem("pf_school", JSON.stringify(SCHOOL));
       }
     }).catch(()=>{});
-  setTab("professor");
-  setTimeout(()=>document.getElementById("searchInput").focus(), 100);
+  const destTab = IS_PREMIUM ? "professor" : "course";
+  setTab(destTab);
+  setTimeout(()=>{ const el=document.getElementById(IS_PREMIUM?"searchInput":"courseInput"); if(el) el.focus(); }, 150);
 }
 
 let _schoolTimer = null;
@@ -484,6 +485,11 @@ async function doCourseSearch() {
   const course = document.getElementById("courseInput").value.trim();
   if (!course) return;
   clearDetail();
+  // If school ID hasn't resolved yet (just selected from grid), wait up to 2s
+  if (!SCHOOL.id) {
+    showLoader("searchResults", `Resolving ${esc(SCHOOL.name)}…`);
+    for (let i=0; i<20 && !SCHOOL.id; i++) await new Promise(r=>setTimeout(r,100));
+  }
   const sid = SCHOOL.id||"";
   let cached = false;
   try { cached=(await(await fetch(`/api/index-status?school_id=${encodeURIComponent(sid)}`)).json()).cached; } catch(_){}
